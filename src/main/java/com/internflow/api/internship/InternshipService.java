@@ -24,4 +24,12 @@ public class InternshipService {
                 .findFirst()
                 .orElse(null);
     }
+
+    public InternshipResponse create(CreateInternshipRequest createInternshipRequest) {
+        Long newId = this.internships.size() + 1L;
+        InternshipResponse newInternship = new InternshipResponse(newId, createInternshipRequest.title(), createInternshipRequest.company(),
+                createInternshipRequest.durationInMonths());
+        this.internships.add(newInternship);
+        return newInternship;
+    }
 }
