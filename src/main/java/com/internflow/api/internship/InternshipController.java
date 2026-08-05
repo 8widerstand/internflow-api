@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -29,7 +30,9 @@ public class InternshipController {
     }
 
     @PostMapping("/internships")
-    public ResponseEntity<InternshipResponse> createinternship(@RequestBody CreateInternshipRequest createInternshipRequest) {
+    public ResponseEntity<InternshipResponse> createInternship(
+            @Valid @RequestBody CreateInternshipRequest createInternshipRequest)
+    {
         InternshipResponse internship = internshipService.create(createInternshipRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(internship);
     }
