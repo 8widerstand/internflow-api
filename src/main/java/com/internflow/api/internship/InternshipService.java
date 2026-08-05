@@ -2,50 +2,68 @@ package com.internflow.api.internship;
 
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class InternshipService {
 
-    private final List<InternshipResponse> internships = new ArrayList<>(
-            List.of(new InternshipResponse(1L, "Java Backend Internship", "Docufy", 6),
-                    new InternshipResponse(2L, "Spring Boot Internship", "TechCorp", 3)));
+    private final InternshipRepository internshipRepository;
 
+    public InternshipService(InternshipRepository internshipRepository) {
+        this.internshipRepository = internshipRepository;
+    }
 
     public List<InternshipResponse> findAllInternships() {
-        return this.internships;
+        return this.internshipRepository.findAll().stream()
+                .map(this::toInternshipResponse)
+                .toList();
     }
 
     public Optional<InternshipResponse> findInternshipById(Long id) {
-        return this.internships.stream()
-                .filter(internship -> internship.id().equals(id))
-                .findFirst();
+        return internshipRepository.findById(id)
+                .map(this::toInternshipResponse);
     }
 
-    public InternshipResponse create(CreateInternshipRequest createInternshipRequest) {
-        Long newId = this.internships.size() + 1L;
-        InternshipResponse newInternship = new InternshipResponse(newId, createInternshipRequest.title(), createInternshipRequest.company(),
-                createInternshipRequest.durationInMonths());
-        this.internships.add(newInternship);
-        return newInternship;
+    public InternshipResponse create(CreateInternshipRequest request) {
+        Internship internship = new Internship(
+                request.title(),
+                request.company(),
+                request.durationInMonths()
+        );
+
+        Internship savedInternship = internshipRepository.save(internship);
+
+        return toInternshipResponse(savedInternship);
+
     }
 
-    public InternshipResponse update(Long id, CreateInternshipRequest request) {
-        for (int i = 0; i < this.internships.size(); i++) {
-            InternshipResponse existing = internships.get(i);
-
-            if (existing.id().equals(id)) {
-                InternshipResponse newInternship = new InternshipResponse(existing.id(), request.title(), request.company(), request.durationInMonths());
-                this.internships.set(i, newInternship);
-                return newInternship;
-            }
+    public Optional<InternshipResponse> update(Long id, CreateInternshipRequest request) {
+        Optional<Internship> internshipOptional = internshipRepository.findById(id);
+        if (internshipOptional.isEmpty()) {
+            return Optional.empty();
         }
-        return null;
+        Internship internship = internshipOptional.get();
+        internship.update(request.title(), request.company(), request.durationInMonths());
+        Internship savedInternship = internshipRepository.save(internship);
+        return Optional.of(toInternshipResponse(savedInternship));
     }
 
     public boolean delete(Long id) {
-        return this.internships.removeIf(internship -> internship.id().equals(id));
+        if (!internshipRepository.existsById(id)) {
+            return false;
+        }
+
+        internshipRepository.deleteById(id);
+        return true;
+    }
+
+    InternshipResponse toInternshipResponse(Internship internship) {
+        return new InternshipResponse(
+                internship.getId(),
+                internship.getTitle(),
+                internship.getCompany(),
+                internship.getDurationInMonths()
+        );
     }
 }
