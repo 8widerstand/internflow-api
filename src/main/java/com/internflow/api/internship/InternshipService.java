@@ -32,4 +32,17 @@ public class InternshipService {
         this.internships.add(newInternship);
         return newInternship;
     }
+
+    public InternshipResponse update(Long id, CreateInternshipRequest request) {
+        for (int i = 0; i < this.internships.size(); i++) {
+            InternshipResponse existing = internships.get(i);
+
+            if (existing.id().equals(id)) {
+                InternshipResponse newInternship = new InternshipResponse(existing.id(), request.title(), request.company(), request.durationInMonths());
+                this.internships.set(i, newInternship);
+                return newInternship;
+            }
+        }
+        return null;
+    }
 }

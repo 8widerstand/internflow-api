@@ -36,4 +36,13 @@ public class InternshipController {
         InternshipResponse internship = internshipService.create(createInternshipRequest);
         return ResponseEntity.status(HttpStatus.CREATED).body(internship);
     }
+
+    @PutMapping("/internships/{id}")
+    public ResponseEntity<InternshipResponse> updateInternship(@PathVariable Long id, @Valid @RequestBody CreateInternshipRequest createInternshipRequest){
+        InternshipResponse updatedInternship = internshipService.update(id, createInternshipRequest);
+        if (updatedInternship == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(updatedInternship);
+    }
 }
