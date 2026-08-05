@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -29,9 +30,12 @@ public class InternshipController {
 
     @PostMapping("/internships")
     public ResponseEntity<InternshipResponse> createInternship(
-            @Valid @RequestBody CreateInternshipRequest createInternshipRequest) {
+            @Valid @RequestBody CreateInternshipRequest createInternshipRequest
+    ) {
         InternshipResponse internship = internshipService.create(createInternshipRequest);
-        return ResponseEntity.status(HttpStatus.CREATED).body(internship);
+        URI location = URI.create("/internships/" + internship.id());
+
+        return ResponseEntity.created(location).body(internship);
     }
 
     @PutMapping("/internships/{id}")
