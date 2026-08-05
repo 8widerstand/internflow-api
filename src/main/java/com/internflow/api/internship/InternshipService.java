@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class InternshipService {
@@ -17,12 +18,10 @@ public class InternshipService {
         return this.internships;
     }
 
-    public InternshipResponse findInternshipById(Long id) {
-
+    public Optional<InternshipResponse> findInternshipById(Long id) {
         return this.internships.stream()
                 .filter(internship -> internship.id().equals(id))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     public InternshipResponse create(CreateInternshipRequest createInternshipRequest) {

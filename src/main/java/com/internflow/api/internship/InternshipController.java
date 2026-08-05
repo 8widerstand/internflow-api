@@ -21,12 +21,10 @@ public class InternshipController {
     }
 
     @GetMapping("/internships/{id}")
-    public ResponseEntity<InternshipResponse> internshipById(@PathVariable Long id) {
-        InternshipResponse internship = internshipService.findInternshipById(id);
-        if (internship == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(internship);
+    public ResponseEntity<InternshipResponse> getInternshipById(@PathVariable Long id) {
+        return internshipService.findInternshipById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/internships")
