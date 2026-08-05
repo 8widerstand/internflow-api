@@ -45,4 +45,8 @@ public class InternshipService {
         }
         return null;
     }
+
+    public boolean delete(Long id) {
+        return this.internships.removeIf(internship -> internship.id().equals(id));
+    }
 }
