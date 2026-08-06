@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: internflow-postgres
+    environment:
+      POSTGRES_DB: internflow
+      POSTGRES_USER: internflow_user
+      POSTGRES_PASSWORD: internflow_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - internflow_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  internflow_postgres_data:
