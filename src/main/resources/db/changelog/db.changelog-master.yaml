@@ -21,3 +21,32 @@ databaseChangeLog:
       changes:
         - dropTable:
             tableName: "liquibase_test"
+  - changeSet:
+      id: "003-create-internships-table"
+      author: "willy"
+      changes:
+        - createTable:
+            tableName: "internships"
+            columns:
+              - column:
+                  name: "id"
+                  type: "BIGINT"
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "title"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "company"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "duration_in_months"
+                  type: "INTEGER"
+                  constraints:
+                    nullable: false
