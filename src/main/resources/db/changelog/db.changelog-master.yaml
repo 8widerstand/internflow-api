@@ -1,0 +1,23 @@
+databaseChangeLog:
+  - changeSet:
+      id: "001-create-liquibase-test-table"
+      author: "willy"
+      changes:
+        - createTable:
+            tableName: "liquibase_test"
+            columns:
+              - column:
+                  name: "id"
+                  type: "BIGINT"
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "message"
+                  type: "VARCHAR(255)"
+  - changeSet:
+      id: "002-drop-liquibase-test-table"
+      author: "willy"
+      changes:
+        - dropTable:
+            tableName: "liquibase_test"
