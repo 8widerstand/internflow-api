@@ -32,6 +32,10 @@ public class Internship {
         this.durationInMonths = durationInMonths;
     }
 
+    public void updateStatus(InternshipStatus status){
+        this.status = status;
+    }
+
     public Long getId() {
         return id;
     }

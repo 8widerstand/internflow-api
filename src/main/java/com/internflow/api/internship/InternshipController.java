@@ -44,6 +44,12 @@ public class InternshipController {
                 .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    @PatchMapping("internships/{id}/status")
+    public ResponseEntity<InternshipResponse> updateInternshipStatus(@PathVariable Long id, @Valid @RequestBody UpdateInternshipStatusRequest updateStatusRequest) {
+        return internshipService.updateStatus(id, updateStatusRequest.status())
+                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/internships/{id}")
     public ResponseEntity<Void> deleteInternship(@PathVariable Long id) {
         if (internshipService.delete(id)) {

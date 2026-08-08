@@ -49,6 +49,17 @@ public class InternshipService {
         return Optional.of(toInternshipResponse(savedInternship));
     }
 
+    public Optional<InternshipResponse> updateStatus(Long id, InternshipStatus status) {
+        Optional<Internship> internshipOptional = internshipRepository.findById(id);
+        if (internshipOptional.isEmpty()) {
+            return Optional.empty();
+        }
+        Internship internship = internshipOptional.get();
+        internship.updateStatus(status);
+        Internship savedInternship = internshipRepository.save(internship);
+        return Optional.of(toInternshipResponse(savedInternship));
+    }
+
     public boolean delete(Long id) {
         if (!internshipRepository.existsById(id)) {
             return false;
