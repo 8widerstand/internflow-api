@@ -50,3 +50,16 @@ databaseChangeLog:
                   type: "INTEGER"
                   constraints:
                     nullable: false
+  - changeSet:
+      id: "004-add-status-to-internships"
+      author: "willy"
+      changes:
+        - addColumn:
+            tableName: "internships"
+            columns:
+              - column:
+                  name: "status"
+                  type: "VARCHAR(50)"
+                  defaultValue: "OPEN"
+                  constraints:
+                    nullable: false

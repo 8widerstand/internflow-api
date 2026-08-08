@@ -13,6 +13,9 @@ public class Internship {
     private String company;
     private Integer durationInMonths;
 
+    @Enumerated(EnumType.STRING)
+    private InternshipStatus status;
+
     protected Internship() {
     }
 
@@ -20,6 +23,7 @@ public class Internship {
         this.title = title;
         this.company = company;
         this.durationInMonths = durationInMonths;
+        this.status = InternshipStatus.OPEN;
     }
 
     public void update(String title, String company, Integer durationInMonths) {
@@ -42,5 +46,9 @@ public class Internship {
 
     public Integer getDurationInMonths() {
         return durationInMonths;
+    }
+
+    public InternshipStatus getStatus() {
+        return status;
     }
 }

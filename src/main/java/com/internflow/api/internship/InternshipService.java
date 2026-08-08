@@ -63,7 +63,8 @@ public class InternshipService {
                 internship.getId(),
                 internship.getTitle(),
                 internship.getCompany(),
-                internship.getDurationInMonths()
+                internship.getDurationInMonths(),
+                internship.getStatus()
         );
     }
 }
