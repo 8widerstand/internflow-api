@@ -62,4 +62,26 @@ public class InternshipServiceTest {
         assertEquals(internship.getStatus(), response.status());
     }
 
+    @Test
+    void updateStatusShouldReturnUpdatedInternshipWhenInternshipExists() {
+        Internship internship = new Internship("Java Internship", "BMW", 6);
+        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+        when(internshipRepository.save(internship)).thenReturn(internship);
+
+        Optional<InternshipResponse> result = internshipService.updateStatus(1L, InternshipStatus.COMPLETED);
+        assertTrue(result.isPresent());
+        InternshipResponse response = result.get();
+        assertEquals(InternshipStatus.COMPLETED, response.status());
+
+        verify(internshipRepository).save(internship);
+    }
+
+    @Test
+    void updateStatusShouldReturnEmptyWhenInternshipDoesNotExist() {
+        when(internshipRepository.findById(1L)).thenReturn(Optional.empty());
+        Optional<InternshipResponse> result = internshipService.updateStatus(1L, InternshipStatus.COMPLETED);
+        assertTrue(result.isEmpty());
+
+        verify(internshipRepository, never()).save(any(Internship.class));
+    }
 }
