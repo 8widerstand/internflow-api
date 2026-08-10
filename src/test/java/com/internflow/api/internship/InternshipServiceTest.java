@@ -6,6 +6,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -128,5 +129,29 @@ public class InternshipServiceTest {
         assertTrue(result.isEmpty());
 
         verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void findAllInternshipsShouldReturnAllInternships() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        Internship internship2 = new Internship("Backend Internship", "Siemens", 8);
+
+        when(internshipRepository.findAll()).thenReturn(List.of(internship1, internship2));
+        List<InternshipResponse> result = internshipService.findAllInternships();
+
+        assertEquals(2, result.size());
+
+        assertEquals(internship1.getTitle(), result.get(0).title());
+        assertEquals(internship1.getCompany(), result.get(0).company());
+        assertEquals(internship1.getDurationInMonths(), result.get(0).durationInMonths());
+        assertEquals(internship1.getStatus(), result.get(0).status());
+
+        assertEquals(internship2.getTitle(), result.get(1).title());
+        assertEquals(internship2.getCompany(), result.get(1).company());
+        assertEquals(internship2.getDurationInMonths(), result.get(1).durationInMonths());
+        assertEquals(internship2.getStatus(), result.get(1).status());
+
+        verify(internshipRepository).findAll();
+
     }
 }
