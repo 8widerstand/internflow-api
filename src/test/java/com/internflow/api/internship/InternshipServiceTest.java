@@ -84,4 +84,19 @@ public class InternshipServiceTest {
 
         verify(internshipRepository, never()).save(any(Internship.class));
     }
+
+    @Test
+    void createShouldReturnCreatedInternship() {
+        CreateInternshipRequest request = new CreateInternshipRequest("Java Internship", "BMW", 6);
+
+        when(internshipRepository.save(any(Internship.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        InternshipResponse internshipResponse = internshipService.create(request);
+        assertEquals(request.title(), internshipResponse.title());
+        assertEquals(request.company(), internshipResponse.company());
+        assertEquals(request.durationInMonths(), internshipResponse.durationInMonths());
+        assertEquals(InternshipStatus.OPEN, internshipResponse.status());
+
+        verify(internshipRepository).save(any(Internship.class));
+    }
 }
