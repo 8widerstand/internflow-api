@@ -25,7 +25,7 @@ public class InternshipControllerTest {
 
     @Test
     void getInternshipByIdShouldReturnOkWhenInternshipExists() throws Exception {
-        InternshipResponse response = new InternshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
 
         when(internshipService.findInternshipById(1L)).thenReturn(Optional.of(response));
 
@@ -44,8 +44,8 @@ public class InternshipControllerTest {
 
     @Test
     void getAllInternshipsShouldReturnOkWithInternships() throws Exception {
-        InternshipResponse internship1 = new InternshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        InternshipResponse internship2 = new InternshipResponse(2L, "Backend Internship", "Siemens", 8, InternshipStatus.OPEN);
+        InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        InternshipResponse internship2 = internshipResponse(2L, "Backend Internship", "Siemens", 8, InternshipStatus.OPEN);
 
         when(internshipService.findAllInternships()).thenReturn(List.of(internship1, internship2));
 
@@ -57,7 +57,7 @@ public class InternshipControllerTest {
 
     @Test
     void createInternshipShouldReturnCreatedWhenRequestIsValid() throws Exception {
-        InternshipResponse response = new InternshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         String requestBody = """
                 {
                   "title": "Java Internship",
@@ -97,7 +97,7 @@ public class InternshipControllerTest {
 
     @Test
     void updateInternshipStatusShouldReturnOkWhenInternshipExists() throws Exception {
-        InternshipResponse response = new InternshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.COMPLETED);
+        InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.COMPLETED);
         String requestBody = """
                 {
                     "status": "COMPLETED"
@@ -143,7 +143,7 @@ public class InternshipControllerTest {
 
     @Test
     void updateInternshipShouldReturnOkWhenInternshipExists() throws Exception {
-        InternshipResponse response = new InternshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         String requestBody = """
                 {
                   "title": "Java Internship",
@@ -206,6 +206,16 @@ public class InternshipControllerTest {
         when(internshipService.delete(1L)).thenReturn(false);
         mockMvc.perform(delete("/internships/1"))
                 .andExpect(status().isNotFound());
+    }
+
+    private InternshipResponse internshipResponse(
+            Long id,
+            String title,
+            String company,
+            Integer durationInMonths,
+            InternshipStatus status
+    ) {
+        return new InternshipResponse(id, title, company, durationInMonths, status);
     }
 }
 
