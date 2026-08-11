@@ -8,6 +8,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -23,6 +24,9 @@ class InternshipIntegrationTest {
 
     @Autowired
     private InternshipRepository internshipRepository;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @BeforeEach
     void cleanDatabase() {
@@ -62,4 +66,30 @@ class InternshipIntegrationTest {
         mockMvc.perform(get("/internships")).andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("Java Internship"));
     }
+
+    @Test
+    void createdInternshipShouldBeReturnedById() throws Exception {
+        String requestBody = """
+                {
+                  "title": "Java Internship",
+                  "company": "BMW",
+                  "durationInMonths": 6
+                }
+                """;
+
+        String responseBody = mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        InternshipResponse created = objectMapper.readValue(responseBody, InternshipResponse.class);
+
+
+        mockMvc.perform(get("/internships/" + created.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Java Internship"))
+                .andExpect(jsonPath("$.company").value("BMW"))
+                .andExpect(jsonPath("$.durationInMonths").value(6))
+                .andExpect(jsonPath("$.status").value(InternshipStatus.OPEN.name()));
+
+    }
+
 }
