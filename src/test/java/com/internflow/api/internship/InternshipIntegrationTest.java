@@ -92,4 +92,33 @@ class InternshipIntegrationTest {
 
     }
 
+    @Test
+    void updatedStatusShouldBePersisted() throws Exception {
+
+        String statusBody = """
+                        {
+                          "status": "COMPLETED"
+                        }
+                """;
+
+        String requestBody = """
+                {
+                  "title": "Java Internship",
+                  "company": "BMW",
+                  "durationInMonths": 6
+                }
+                """;
+
+        String responseBody = mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isCreated()).andReturn().getResponse().getContentAsString();
+        InternshipResponse created = objectMapper.readValue(responseBody, InternshipResponse.class);
+
+        mockMvc.perform(patch("/internships/" + created.id() + "/status").contentType(MediaType.APPLICATION_JSON).content(statusBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(InternshipStatus.COMPLETED.name()));
+
+        mockMvc.perform(get("/internships/" + created.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(InternshipStatus.COMPLETED.name()));
+    }
 }
