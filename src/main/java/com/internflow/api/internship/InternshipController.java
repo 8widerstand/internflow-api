@@ -16,8 +16,10 @@ public class InternshipController {
     }
 
     @GetMapping("/internships")
-    public List<InternshipResponse> internships() {
-        return internshipService.findAllInternships();
+    public List<InternshipResponse> internships(
+            @RequestParam(required = false) InternshipStatus status
+    ) {
+        return internshipService.findAllInternships(status);
     }
 
     @GetMapping("/internships/{id}")

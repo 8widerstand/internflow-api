@@ -14,8 +14,16 @@ public class InternshipService {
         this.internshipRepository = internshipRepository;
     }
 
-    public List<InternshipResponse> findAllInternships() {
-        return this.internshipRepository.findAll().stream()
+    public List<InternshipResponse> findAllInternships(InternshipStatus status) {
+        List<Internship> internships;
+
+        if (status == null) {
+            internships = internshipRepository.findAll();
+        } else {
+            internships = internshipRepository.findByStatus(status);
+        }
+
+        return internships.stream()
                 .map(this::toInternshipResponse)
                 .toList();
     }

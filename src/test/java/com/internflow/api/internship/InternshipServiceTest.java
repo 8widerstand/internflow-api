@@ -137,7 +137,7 @@ public class InternshipServiceTest {
         Internship internship2 = new Internship("Backend Internship", "Siemens", 8);
 
         when(internshipRepository.findAll()).thenReturn(List.of(internship1, internship2));
-        List<InternshipResponse> result = internshipService.findAllInternships();
+        List<InternshipResponse> result = internshipService.findAllInternships(null);
 
         assertEquals(2, result.size());
 
@@ -153,5 +153,18 @@ public class InternshipServiceTest {
 
         verify(internshipRepository).findAll();
 
+    }
+
+    @Test
+    void findAllInternshipsShouldReturnInternshipsFilteredByStatus() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        when(internshipRepository.findByStatus(InternshipStatus.OPEN)).thenReturn(List.of(internship1));
+        List<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN);
+
+        assertEquals(1, result.size());
+        assertEquals(InternshipStatus.OPEN, result.get(0).status());
+
+        verify(internshipRepository, never()).findAll();
+        verify(internshipRepository).findByStatus(InternshipStatus.OPEN);
     }
 }

@@ -121,4 +121,52 @@ class InternshipIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.status").value(InternshipStatus.COMPLETED.name()));
     }
+
+    @Test
+    void getInternshipsShouldFilterByStatus() throws Exception {
+        String statusBody = """
+                {
+                  "status": "COMPLETED"
+                }
+                """;
+
+        String requestBody1 = internshipRequestJson("Open Internship", "BMW", 6);
+        String requestBody2 = internshipRequestJson("Completed Internship", "BMW", 6);
+
+         internshipResponseBody(requestBody1);
+        String responseBody2 = internshipResponseBody(requestBody2);
+
+        InternshipResponse created2 = objectMapper.readValue(responseBody2, InternshipResponse.class);
+
+        mockMvc.perform(patch("/internships/" + created2.id() + "/status").contentType(MediaType.APPLICATION_JSON).content(statusBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(InternshipStatus.COMPLETED.name()));
+
+        mockMvc.perform(get("/internships?status=COMPLETED"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("Completed Internship"))
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].status").value(InternshipStatus.COMPLETED.name()));
+
+    }
+
+    private String internshipResponseBody(String requestBody) throws Exception {
+        return mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+    }
+
+    private String internshipRequestJson(
+            String title,
+            String company,
+            Integer durationInMonths
+    ) {
+        return """
+                {
+                    "title": "%s",
+                    "company": "%s",
+                    "durationInMonths": %d
+                }
+                """.formatted(title, company, durationInMonths);
+    }
 }
