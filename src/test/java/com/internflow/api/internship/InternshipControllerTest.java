@@ -141,5 +141,58 @@ public class InternshipControllerTest {
         verify(internshipService, never()).updateStatus(anyLong(), any(InternshipStatus.class));
     }
 
+    @Test
+    void updateInternshipShouldReturnOkWhenInternshipExists() throws Exception {
+        InternshipResponse response = new InternshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        String requestBody = """
+                {
+                  "title": "Java Internship",
+                  "company": "BMW",
+                  "durationInMonths": 6
+                }
+                """;
+        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(Optional.of(response));
+        mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.title").value("Java Internship"))
+                .andExpect(jsonPath("$.company").value("BMW"))
+                .andExpect(jsonPath("$.durationInMonths").value(6))
+                .andExpect(jsonPath("$.status").value(InternshipStatus.OPEN.name()));
+    }
+
+    @Test
+    void updateInternshipShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
+        String requestBody = """
+                {
+                  "title": "Java Internship",
+                  "company": "BMW",
+                  "durationInMonths": 6
+                }
+                """;
+        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(Optional.empty());
+        mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateInternshipShouldReturnBadRequestWhenRequestIsInvalid() throws Exception {
+        String requestBody = """
+                {
+                  "title": "",
+                  "company": "",
+                  "durationInMonths": 0
+                }
+                """;
+
+        mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.title").value("Title is required"))
+                .andExpect(jsonPath("$.errors.company").value("Company is required"))
+                .andExpect(jsonPath("$.errors.durationInMonths").value("Duration must be greater than 0"));
+
+        verify(internshipService, never()).update(anyLong(), any(CreateInternshipRequest.class));
+    }
+
 }
 
