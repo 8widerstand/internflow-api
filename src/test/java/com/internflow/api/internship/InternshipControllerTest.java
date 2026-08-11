@@ -106,7 +106,7 @@ public class InternshipControllerTest {
 
     @Test
     void updateInternshipStatusShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
-        String requestBody =statusRequestJson(InternshipStatus.COMPLETED);
+        String requestBody = statusRequestJson(InternshipStatus.COMPLETED);
 
         when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED)).thenReturn(Optional.empty());
         mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
