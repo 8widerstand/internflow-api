@@ -94,5 +94,52 @@ public class InternshipControllerTest {
 
         verify(internshipService, never()).create(any(CreateInternshipRequest.class));
     }
+
+    @Test
+    void updateInternshipStatusShouldReturnOkWhenInternshipExists() throws Exception {
+        InternshipResponse response = new InternshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.COMPLETED);
+        String requestBody = """
+                {
+                    "status": "COMPLETED"
+                }
+                """;
+
+        when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED))
+                .thenReturn(Optional.of(response));
+
+        mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value(InternshipStatus.COMPLETED.name()));
+
+    }
+
+    @Test
+    void updateInternshipStatusShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
+        String requestBody = """
+                   {
+                       "status": "COMPLETED"
+                   }
+                """;
+
+        when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED)).thenReturn(Optional.empty());
+        mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void updateInternshipStatusShouldReturnBadRequestWhenStatusIsInvalid() throws Exception {
+        String requestBody = """
+                   {
+                       "status": "UNKNOWN"
+                   }
+                """;
+
+        mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid request body"))
+                .andExpect(jsonPath("$.errors.request").value("Request body is malformed or contains invalid values"));
+        verify(internshipService, never()).updateStatus(anyLong(), any(InternshipStatus.class));
+    }
+
 }
 
