@@ -194,5 +194,18 @@ public class InternshipControllerTest {
         verify(internshipService, never()).update(anyLong(), any(CreateInternshipRequest.class));
     }
 
+    @Test
+    void deleteInternshipShouldReturnNoContentWhenInternshipExists() throws Exception {
+        when(internshipService.delete(1L)).thenReturn(true);
+        mockMvc.perform(delete("/internships/1"))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void deleteInternshipShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
+        when(internshipService.delete(1L)).thenReturn(false);
+        mockMvc.perform(delete("/internships/1"))
+                .andExpect(status().isNotFound());
+    }
 }
 
