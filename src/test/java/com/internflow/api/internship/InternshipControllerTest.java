@@ -58,13 +58,8 @@ public class InternshipControllerTest {
     @Test
     void createInternshipShouldReturnCreatedWhenRequestIsValid() throws Exception {
         InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        String requestBody = """
-                {
-                  "title": "Java Internship",
-                  "company": "BMW",
-                  "durationInMonths": 6
-                }
-                """;
+        String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
+
         when(internshipService.create(any(CreateInternshipRequest.class))).thenReturn(response);
         mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isCreated())
@@ -98,11 +93,7 @@ public class InternshipControllerTest {
     @Test
     void updateInternshipStatusShouldReturnOkWhenInternshipExists() throws Exception {
         InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.COMPLETED);
-        String requestBody = """
-                {
-                    "status": "COMPLETED"
-                }
-                """;
+        String requestBody = statusRequestJson(InternshipStatus.COMPLETED);
 
         when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED))
                 .thenReturn(Optional.of(response));
@@ -115,11 +106,7 @@ public class InternshipControllerTest {
 
     @Test
     void updateInternshipStatusShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
-        String requestBody = """
-                   {
-                       "status": "COMPLETED"
-                   }
-                """;
+        String requestBody =statusRequestJson(InternshipStatus.COMPLETED);
 
         when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED)).thenReturn(Optional.empty());
         mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
@@ -144,13 +131,7 @@ public class InternshipControllerTest {
     @Test
     void updateInternshipShouldReturnOkWhenInternshipExists() throws Exception {
         InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        String requestBody = """
-                {
-                  "title": "Java Internship",
-                  "company": "BMW",
-                  "durationInMonths": 6
-                }
-                """;
+        String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
         when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(Optional.of(response));
         mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isOk())
@@ -162,13 +143,7 @@ public class InternshipControllerTest {
 
     @Test
     void updateInternshipShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
-        String requestBody = """
-                {
-                  "title": "Java Internship",
-                  "company": "BMW",
-                  "durationInMonths": 6
-                }
-                """;
+        String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
         when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(Optional.empty());
         mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isNotFound());
@@ -216,6 +191,28 @@ public class InternshipControllerTest {
             InternshipStatus status
     ) {
         return new InternshipResponse(id, title, company, durationInMonths, status);
+    }
+
+    private String internshipRequestJson(
+            String title,
+            String company,
+            Integer durationInMonths
+    ) {
+        return """
+                {
+                    "title": "%s",
+                    "company": "%s",
+                    "durationInMonths": %d
+                }
+                """.formatted(title, company, durationInMonths);
+    }
+
+    private String statusRequestJson(InternshipStatus status) {
+        return """
+                 {
+                     "status": "%s"
+                 }
+                """.formatted(status);
     }
 }
 
