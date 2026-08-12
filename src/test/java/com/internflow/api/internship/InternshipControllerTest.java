@@ -115,6 +115,16 @@ public class InternshipControllerTest {
     }
 
     @Test
+    void getAllInternshipsShouldReturnBadRequestWhenStatusParameterIsInvalid() throws Exception {
+
+        mockMvc.perform(get("/internships?status=UNKNOWN")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid request parameter"))
+                .andExpect(jsonPath("$.errors.status").value("Invalid internship status"));
+
+        verify(internshipService, never()).findAllInternships(any(), any());
+    }
+
+    @Test
     void createInternshipShouldReturnCreatedWhenRequestIsValid() throws Exception {
         InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         String requestBody = internshipRequestJson("Java Internship", "BMW", 6);

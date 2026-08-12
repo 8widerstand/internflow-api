@@ -13,7 +13,6 @@ import tools.jackson.databind.ObjectMapper;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import static org.springframework.web.servlet.function.RequestPredicates.contentType;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -206,6 +205,14 @@ class InternshipIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
 
+    }
+
+    @Test
+    void getInternshipsShouldReturnBadRequestWhenStatusParameterIsInvalid() throws Exception {
+        mockMvc.perform(get("/internships?status=UNKNOWN"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid request parameter"))
+                .andExpect(jsonPath("$.errors.status").value("Invalid internship status"));
     }
 
     private String internshipResponseBody(String requestBody) throws Exception {

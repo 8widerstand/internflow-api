@@ -6,6 +6,7 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,19 @@ public class GlobalExceptionHandler {
         Map<String, String> errors = new HashMap<>();
         errors.put("request", "Request body is malformed or contains invalid values");
         ValidationErrorResponse response = new ValidationErrorResponse("Invalid request body", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ValidationErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+        Map<String, String> errors = new HashMap<>();
+        String parameterName = exception.getName();
+        if ("status".equals(parameterName)) {
+            errors.put(parameterName, "Invalid internship status");
+        }else {
+            errors.put(parameterName, "Invalid request parameter");
+        }
+        ValidationErrorResponse response = new ValidationErrorResponse("Invalid request parameter", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 }
