@@ -22,9 +22,9 @@ public class InternshipService {
         } else if (status != null && company == null) {
             internships = internshipRepository.findByStatus(status);
         } else if (status == null && company != null) {
-            internships = internshipRepository.findByCompany(company);
+            internships = internshipRepository.findByCompanyContainingIgnoreCase(company);
         } else {
-            internships = internshipRepository.findByStatusAndCompany(status, company);
+            internships = internshipRepository.findByStatusAndCompanyContainingIgnoreCase(status, company);
         }
 
         return internships.stream()

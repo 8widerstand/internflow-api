@@ -13,6 +13,7 @@ import tools.jackson.databind.ObjectMapper;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.web.servlet.function.RequestPredicates.contentType;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -158,11 +159,39 @@ class InternshipIntegrationTest {
         internshipResponseBody(requestBody1);
         internshipResponseBody(requestBody2);
 
-        mockMvc.perform(get("/internships?company=BMW"))
+        mockMvc.perform(get("/internships?company=bm"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].title").value("BMW Internship"))
                 .andExpect(jsonPath("$[0].company").value("BMW"))
                 .andExpect(jsonPath("$.length()").value(1));
+    }
+
+    @Test
+    void getInternshipsShouldFilterByStatusAndCompany() throws Exception {
+        String statusBody = """
+                {
+                  "status": "COMPLETED"
+                }
+                """;
+
+        String requestBody1 = internshipRequestJson("BMW Internship", "BMW", 6);
+        String requestBody2 = internshipRequestJson("Siemens Internship", "Siemens", 8);
+
+
+        String responseBody1 = internshipResponseBody(requestBody1);
+        internshipResponseBody(requestBody2);
+
+        InternshipResponse created1 = objectMapper.readValue(responseBody1, InternshipResponse.class);
+
+        mockMvc.perform(patch("/internships/" + created1.id() + "/status").contentType(MediaType.APPLICATION_JSON).content(statusBody))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/internships?status=COMPLETED&company=bm"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].status").value(InternshipStatus.COMPLETED.name()))
+                .andExpect(jsonPath("$[0].company").value("BMW"))
+                .andExpect(jsonPath("$.length()").value(1));
+
     }
 
     private String internshipResponseBody(String requestBody) throws Exception {
