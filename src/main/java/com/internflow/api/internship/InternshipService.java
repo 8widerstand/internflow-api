@@ -14,13 +14,17 @@ public class InternshipService {
         this.internshipRepository = internshipRepository;
     }
 
-    public List<InternshipResponse> findAllInternships(InternshipStatus status) {
+    public List<InternshipResponse> findAllInternships(InternshipStatus status, String company) {
         List<Internship> internships;
 
-        if (status == null) {
+        if (status == null && company == null) {
             internships = internshipRepository.findAll();
-        } else {
+        } else if (status != null && company == null) {
             internships = internshipRepository.findByStatus(status);
+        } else if (status == null && company != null) {
+            internships = internshipRepository.findByCompany(company);
+        } else {
+            internships = internshipRepository.findByStatusAndCompany(status, company);
         }
 
         return internships.stream()

@@ -133,7 +133,7 @@ class InternshipIntegrationTest {
         String requestBody1 = internshipRequestJson("Open Internship", "BMW", 6);
         String requestBody2 = internshipRequestJson("Completed Internship", "BMW", 6);
 
-         internshipResponseBody(requestBody1);
+        internshipResponseBody(requestBody1);
         String responseBody2 = internshipResponseBody(requestBody2);
 
         InternshipResponse created2 = objectMapper.readValue(responseBody2, InternshipResponse.class);
@@ -148,6 +148,21 @@ class InternshipIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value(InternshipStatus.COMPLETED.name()));
 
+    }
+
+    @Test
+    void getInternshipsShouldFilterByCompany() throws Exception {
+        String requestBody1 = internshipRequestJson("BMW Internship", "BMW", 6);
+        String requestBody2 = internshipRequestJson("Siemens Internship", "Siemens", 8);
+
+        internshipResponseBody(requestBody1);
+        internshipResponseBody(requestBody2);
+
+        mockMvc.perform(get("/internships?company=BMW"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].title").value("BMW Internship"))
+                .andExpect(jsonPath("$[0].company").value("BMW"))
+                .andExpect(jsonPath("$.length()").value(1));
     }
 
     private String internshipResponseBody(String requestBody) throws Exception {

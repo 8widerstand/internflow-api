@@ -47,7 +47,7 @@ public class InternshipControllerTest {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         InternshipResponse internship2 = internshipResponse(2L, "Backend Internship", "Siemens", 8, InternshipStatus.OPEN);
 
-        when(internshipService.findAllInternships(null)).thenReturn(List.of(internship1, internship2));
+        when(internshipService.findAllInternships(null, null)).thenReturn(List.of(internship1, internship2));
 
         mockMvc.perform(get("/internships")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -56,15 +56,41 @@ public class InternshipControllerTest {
     }
 
     @Test
-    void getAllInternshipsShouldFilterByStatus()  throws Exception {
+    void getAllInternshipsShouldFilterByStatus() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        when(internshipService.findAllInternships(InternshipStatus.OPEN)).thenReturn(List.of(internship1));
+        when(internshipService.findAllInternships(InternshipStatus.OPEN, null)).thenReturn(List.of(internship1));
 
         mockMvc.perform(get("/internships?status=OPEN")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
                 .andExpect(jsonPath("$[0].status").value(InternshipStatus.OPEN.name()));
 
-        verify(internshipService).findAllInternships(InternshipStatus.OPEN);
+        verify(internshipService).findAllInternships(InternshipStatus.OPEN, null);
+    }
+
+    @Test
+    void getAllInternshipsShouldFilterByCompany() throws Exception {
+        InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        when(internshipService.findAllInternships(null, "BMW")).thenReturn(List.of(internship1));
+
+        mockMvc.perform(get("/internships?company=BMW")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].company").value("BMW"))
+                .andExpect(jsonPath("$[0].status").value(InternshipStatus.OPEN.name()));
+
+        verify(internshipService).findAllInternships(null, "BMW");
+    }
+
+    @Test
+    void getAllInternshipsShouldFilterByStatusAndCompany() throws Exception {
+        InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        when(internshipService.findAllInternships(InternshipStatus.OPEN, "BMW")).thenReturn(List.of(internship1));
+
+        mockMvc.perform(get("/internships?status=OPEN&company=BMW")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].company").value("BMW"))
+                .andExpect(jsonPath("$[0].status").value(InternshipStatus.OPEN.name()));
+
+        verify(internshipService).findAllInternships(InternshipStatus.OPEN, "BMW");
     }
 
     @Test

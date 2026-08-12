@@ -137,7 +137,7 @@ public class InternshipServiceTest {
         Internship internship2 = new Internship("Backend Internship", "Siemens", 8);
 
         when(internshipRepository.findAll()).thenReturn(List.of(internship1, internship2));
-        List<InternshipResponse> result = internshipService.findAllInternships(null);
+        List<InternshipResponse> result = internshipService.findAllInternships(null, null);
 
         assertEquals(2, result.size());
 
@@ -159,7 +159,7 @@ public class InternshipServiceTest {
     void findAllInternshipsShouldReturnInternshipsFilteredByStatus() {
         Internship internship1 = new Internship("Java Internship", "BMW", 6);
         when(internshipRepository.findByStatus(InternshipStatus.OPEN)).thenReturn(List.of(internship1));
-        List<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN);
+        List<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN, null);
 
         assertEquals(1, result.size());
         assertEquals(InternshipStatus.OPEN, result.get(0).status());
@@ -167,4 +167,36 @@ public class InternshipServiceTest {
         verify(internshipRepository, never()).findAll();
         verify(internshipRepository).findByStatus(InternshipStatus.OPEN);
     }
+
+    @Test
+    void findAllInternshipsShouldReturnInternshipsFilteredByCompany() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        when(internshipRepository.findByCompany(internship1.getCompany())).thenReturn(List.of(internship1));
+        List<InternshipResponse> result = internshipService.findAllInternships(null, "BMW");
+
+        assertEquals(1, result.size());
+        assertEquals("BMW", result.get(0).company());
+
+        verify(internshipRepository).findByCompany("BMW");
+        verify(internshipRepository, never()).findByStatus(any());
+        verify(internshipRepository, never()).findAll();
+        verify(internshipRepository, never()).findByStatusAndCompany(any(), any());
+    }
+
+    @Test
+    void findAllInternshipsShouldReturnInternshipsFilteredByStatusAndCompany() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        when(internshipRepository.findByStatusAndCompany(InternshipStatus.OPEN, "BMW")).thenReturn(List.of(internship1));
+        List<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN, "BMW");
+
+        assertEquals(1, result.size());
+        assertEquals("BMW", result.get(0).company());
+        assertEquals(InternshipStatus.OPEN, result.get(0).status());
+
+        verify(internshipRepository).findByStatusAndCompany(InternshipStatus.OPEN, "BMW");
+        verify(internshipRepository, never()).findByCompany(any());
+        verify(internshipRepository, never()).findByStatus(any());
+        verify(internshipRepository, never()).findAll();
+    }
+
 }
