@@ -94,6 +94,27 @@ public class InternshipControllerTest {
     }
 
     @Test
+    void getAllInternshipsShouldTreatBlankCompanyAsNoCompanyFilter() throws Exception {
+        InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        when(internshipService.findAllInternships(null, null)).thenReturn(List.of(internship1));
+
+        mockMvc.perform(get("/internships?company=  ")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+        verify(internshipService).findAllInternships(null, null);
+    }
+
+    @Test
+    void getAllInternshipsShouldTrimCompanyFilter() throws Exception {
+        InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        when(internshipService.findAllInternships(null, "BMW")).thenReturn(List.of(internship1));
+
+        mockMvc.perform(get("/internships?company= BMW ")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1));
+
+        verify(internshipService).findAllInternships(null, "BMW");
+    }
+
+    @Test
     void createInternshipShouldReturnCreatedWhenRequestIsValid() throws Exception {
         InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         String requestBody = internshipRequestJson("Java Internship", "BMW", 6);

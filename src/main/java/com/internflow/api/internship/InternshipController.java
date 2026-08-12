@@ -20,7 +20,8 @@ public class InternshipController {
             @RequestParam(required = false) InternshipStatus status,
             @RequestParam(required = false) String company
     ) {
-        return internshipService.findAllInternships(status, company);
+        String companyValue = normalizeCompany(company);
+        return internshipService.findAllInternships(status, companyValue);
     }
 
     @GetMapping("/internships/{id}")
@@ -58,5 +59,12 @@ public class InternshipController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private String normalizeCompany(String company) {
+        if (company == null || company.trim().isEmpty()) {
+            return null;
+        }
+        return company.trim();
     }
 }

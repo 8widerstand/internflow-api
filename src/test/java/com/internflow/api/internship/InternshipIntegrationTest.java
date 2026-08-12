@@ -194,6 +194,20 @@ class InternshipIntegrationTest {
 
     }
 
+    @Test
+    void blankCompanyFilterShouldReturnAllInternships() throws Exception {
+        String requestBody1 = internshipRequestJson("BMW Internship", "BMW", 6);
+        String requestBody2 = internshipRequestJson("Siemens Internship", "Siemens", 8);
+
+        internshipResponseBody(requestBody1);
+        internshipResponseBody(requestBody2);
+
+        mockMvc.perform(get("/internships?company= "))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(2));
+
+    }
+
     private String internshipResponseBody(String requestBody) throws Exception {
         return mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isCreated())
