@@ -136,74 +136,6 @@ public class InternshipServiceTest {
     }
 
     @Test
-    void findAllInternshipsShouldReturnAllInternships() {
-        Internship internship1 = new Internship("Java Internship", "BMW", 6);
-        Internship internship2 = new Internship("Backend Internship", "Siemens", 8);
-
-        when(internshipRepository.findAll()).thenReturn(List.of(internship1, internship2));
-        List<InternshipResponse> result = internshipService.findAllInternships(null, null);
-
-        assertEquals(2, result.size());
-
-        assertEquals(internship1.getTitle(), result.get(0).title());
-        assertEquals(internship1.getCompany(), result.get(0).company());
-        assertEquals(internship1.getDurationInMonths(), result.get(0).durationInMonths());
-        assertEquals(internship1.getStatus(), result.get(0).status());
-
-        assertEquals(internship2.getTitle(), result.get(1).title());
-        assertEquals(internship2.getCompany(), result.get(1).company());
-        assertEquals(internship2.getDurationInMonths(), result.get(1).durationInMonths());
-        assertEquals(internship2.getStatus(), result.get(1).status());
-
-        verify(internshipRepository).findAll();
-
-    }
-
-    @Test
-    void findAllInternshipsShouldReturnInternshipsFilteredByStatus() {
-        Internship internship1 = new Internship("Java Internship", "BMW", 6);
-        when(internshipRepository.findByStatus(InternshipStatus.OPEN)).thenReturn(List.of(internship1));
-        List<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN, null);
-
-        assertEquals(1, result.size());
-        assertEquals(InternshipStatus.OPEN, result.get(0).status());
-
-        verify(internshipRepository, never()).findAll();
-        verify(internshipRepository).findByStatus(InternshipStatus.OPEN);
-    }
-
-    @Test
-    void findAllInternshipsShouldReturnInternshipsFilteredByCompany() {
-        Internship internship1 = new Internship("Java Internship", "BMW", 6);
-        when(internshipRepository.findByCompanyContainingIgnoreCase("bm")).thenReturn(List.of(internship1));
-        List<InternshipResponse> result = internshipService.findAllInternships(null, "bm");
-
-        assertEquals(1, result.size());
-        assertEquals("BMW", result.get(0).company());
-
-        verify(internshipRepository).findByCompanyContainingIgnoreCase("bm");
-        verify(internshipRepository, never()).findByStatus(any());
-        verify(internshipRepository, never()).findAll();
-        verify(internshipRepository, never()).findByStatusAndCompanyContainingIgnoreCase(any(), any());
-    }
-
-    @Test
-    void findAllInternshipsShouldReturnInternshipsFilteredByStatusAndCompany() {
-        Internship internship1 = new Internship("Java Internship", "BMW", 6);
-        when(internshipRepository.findByStatusAndCompanyContainingIgnoreCase(InternshipStatus.OPEN, "bm")).thenReturn(List.of(internship1));
-        List<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN, "bm");
-
-        assertEquals(1, result.size());
-        assertEquals("BMW", result.get(0).company());
-        assertEquals(InternshipStatus.OPEN, result.get(0).status());
-
-        verify(internshipRepository).findByStatusAndCompanyContainingIgnoreCase(InternshipStatus.OPEN, "bm");
-        verify(internshipRepository, never()).findByCompanyContainingIgnoreCase(any());
-        verify(internshipRepository, never()).findByStatus(any());
-        verify(internshipRepository, never()).findAll();
-    }
-
-    @Test
     void findAllInternshipsShouldReturnPagedInternships() {
         Internship internship1 = new Internship("Java Internship", "BMW", 6);
         Internship internship2 = new Internship("Backend Internship", "Siemens", 8);
@@ -245,7 +177,7 @@ public class InternshipServiceTest {
         assertEquals(1, result.getContent().size());
         assertEquals(internship1.getTitle(), result.getContent().get(0).title());
 
-        verify(internshipRepository).findByCompanyContainingIgnoreCase(internship1.getCompany(), pageable);
+        verify(internshipRepository).findByCompanyContainingIgnoreCase("bm", pageable);
         verify(internshipRepository, never()).findAll(pageable);
     }
 
@@ -262,7 +194,7 @@ public class InternshipServiceTest {
         assertEquals(1, result.getContent().size());
         assertEquals(internship1.getTitle(), result.getContent().get(0).title());
 
-        verify(internshipRepository).findByStatusAndCompanyContainingIgnoreCase(InternshipStatus.OPEN, internship1.getCompany(), pageable);
+        verify(internshipRepository).findByStatusAndCompanyContainingIgnoreCase(InternshipStatus.OPEN, "bm", pageable);
         verify(internshipRepository, never()).findAll(pageable);
     }
 }

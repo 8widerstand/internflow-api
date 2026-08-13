@@ -1,14 +1,15 @@
 package com.internflow.api.internship;
 
 import jakarta.validation.Valid;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
+import java.util.List;
 
 @RestController
 public class InternshipController {
@@ -23,13 +24,13 @@ public class InternshipController {
             @RequestParam(required = false) InternshipStatus status,
             @RequestParam(required = false) String company,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id,asc") String sort
     ) {
-        if (page < 0) throw new IllegalArgumentException("page: Page must be greater than or equal to 0");
-        if (size <= 0) throw new IllegalArgumentException("size: Size must be greater than 0");
-
+        validatePagination(page, size);
+        Sort sortValue = parseSort(sort);
         String companyValue = normalizeCompany(company);
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(page, size, sortValue);
         return internshipService.findAllInternships(status, companyValue, pageable);
     }
 
@@ -51,13 +52,19 @@ public class InternshipController {
     }
 
     @PutMapping("/internships/{id}")
-    public ResponseEntity<InternshipResponse> updateInternship(@PathVariable Long id, @Valid @RequestBody CreateInternshipRequest createInternshipRequest) {
+    public ResponseEntity<InternshipResponse> updateInternship(
+            @PathVariable Long id,
+            @Valid @RequestBody CreateInternshipRequest createInternshipRequest
+    ) {
         return internshipService.update(id, createInternshipRequest)
                 .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PatchMapping("internships/{id}/status")
-    public ResponseEntity<InternshipResponse> updateInternshipStatus(@PathVariable Long id, @Valid @RequestBody UpdateInternshipStatusRequest updateStatusRequest) {
+    @PatchMapping("/internships/{id}/status")
+    public ResponseEntity<InternshipResponse> updateInternshipStatus(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateInternshipStatusRequest updateStatusRequest
+    ) {
         return internshipService.updateStatus(id, updateStatusRequest.status())
                 .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
@@ -75,5 +82,35 @@ public class InternshipController {
             return null;
         }
         return company.trim();
+    }
+
+    private void validatePagination(int page, int size) {
+        if (page < 0) {
+            throw new IllegalArgumentException("page: Page must be greater than or equal to 0");
+        }
+        if (size <= 0) {
+            throw new IllegalArgumentException("size: Size must be greater than 0");
+        }
+    }
+
+    private Sort parseSort(String sort) {
+        String[] parts = sort.split(",");
+        String field = parts[0];
+        if (!List.of("id", "title", "company", "durationInMonths", "status").contains(field)) {
+            throw new IllegalArgumentException("sort: Invalid sort field");
+        }
+
+        String direction = "asc";
+        if (parts.length > 1) {
+            direction = parts[1];
+        }
+        String normalizedDirection = direction.toLowerCase();
+
+        if (!List.of("asc", "desc").contains(normalizedDirection)) {
+            throw new IllegalArgumentException("sort: Invalid sort direction");
+        }
+
+        Sort.Direction directionValue = Sort.Direction.fromString(normalizedDirection);
+        return Sort.by(directionValue, field);
     }
 }

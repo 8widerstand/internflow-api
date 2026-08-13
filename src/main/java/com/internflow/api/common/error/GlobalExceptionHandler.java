@@ -40,7 +40,7 @@ public class GlobalExceptionHandler {
         String parameterName = exception.getName();
         if ("status".equals(parameterName)) {
             errors.put(parameterName, "Invalid internship status");
-        }else {
+        } else {
             errors.put(parameterName, "Invalid request parameter");
         }
         ValidationErrorResponse response = new ValidationErrorResponse("Invalid request parameter", errors);

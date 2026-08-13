@@ -4,7 +4,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -14,24 +13,6 @@ public class InternshipService {
 
     public InternshipService(InternshipRepository internshipRepository) {
         this.internshipRepository = internshipRepository;
-    }
-
-    public List<InternshipResponse> findAllInternships(InternshipStatus status, String company) {
-        List<Internship> internships;
-
-        if (status == null && company == null) {
-            internships = internshipRepository.findAll();
-        } else if (status != null && company == null) {
-            internships = internshipRepository.findByStatus(status);
-        } else if (status == null && company != null) {
-            internships = internshipRepository.findByCompanyContainingIgnoreCase(company);
-        } else {
-            internships = internshipRepository.findByStatusAndCompanyContainingIgnoreCase(status, company);
-        }
-
-        return internships.stream()
-                .map(this::toInternshipResponse)
-                .toList();
     }
 
     public Page<InternshipResponse> findAllInternships(

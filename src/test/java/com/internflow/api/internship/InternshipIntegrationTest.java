@@ -240,6 +240,23 @@ class InternshipIntegrationTest {
                 .andExpect(jsonPath("$.errors.page").value("Page must be greater than or equal to 0"));
     }
 
+    @Test
+    void getInternshipsShouldReturnInternshipsSortedByCompanyDescending() throws Exception {
+        String requestBody1 = internshipRequestJson("BMW Internship", "BMW", 6);
+        String requestBody2 = internshipRequestJson("Siemens Internship", "Siemens", 8);
+        String requestBody3 = internshipRequestJson("Diehl Group Internship", "Diehl", 7);
+
+        internshipResponseBody(requestBody1);
+        internshipResponseBody(requestBody2);
+        internshipResponseBody(requestBody3);
+
+        mockMvc.perform(get("/internships?sort=company,desc")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(3))
+                .andExpect(jsonPath("$.content[0].company").value("Siemens"))
+                .andExpect(jsonPath("$.content[1].company").value("Diehl"))
+                .andExpect(jsonPath("$.content[2].company").value("BMW"));
+    }
+
     private String internshipResponseBody(String requestBody) throws Exception {
         return mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isCreated())
