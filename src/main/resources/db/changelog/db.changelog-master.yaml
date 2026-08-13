@@ -93,3 +93,21 @@ databaseChangeLog:
               - column:
                   name: "birth_date"
                   type: "DATE"
+
+  - changeSet:
+      id: "006-add-student-id-to-internships"
+      author: "willy"
+      changes:
+        - addColumn:
+            tableName: "internships"
+            columns:
+              - column:
+                  name: "student_id"
+                  type: "BIGINT"
+        - addForeignKeyConstraint:
+            baseTableName: "internships"
+            baseColumnNames: "student_id"
+            referencedTableName: "students"
+            referencedColumnNames: "id"
+            constraintName: "fk_internships_student"
+

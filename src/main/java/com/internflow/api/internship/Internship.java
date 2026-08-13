@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.student.Student;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +16,10 @@ public class Internship {
 
     @Enumerated(EnumType.STRING)
     private InternshipStatus status;
+
+    @ManyToOne
+    @JoinColumn(name = "student_id")
+    private Student student;
 
     protected Internship() {
     }
@@ -32,8 +37,12 @@ public class Internship {
         this.durationInMonths = durationInMonths;
     }
 
-    public void updateStatus(InternshipStatus status){
+    public void updateStatus(InternshipStatus status) {
         this.status = status;
+    }
+
+    public void assignStudent(Student student) {
+        this.student = student;
     }
 
     public Long getId() {
@@ -54,5 +63,9 @@ public class Internship {
 
     public InternshipStatus getStatus() {
         return status;
+    }
+
+    public Student getStudent() {
+        return student;
     }
 }
