@@ -1,148 +1,32 @@
 # InternFlow API
 
-Backend REST API built with Java and Spring Boot to manage internships, students, mentors, tasks, and feedback.
+InternFlow is a Spring Boot REST API for managing internships with clean backend fundamentals: persistence, validation, filtering, pagination, sorting, and automated tests.
+
+The project is built as a practical Java backend learning project, but with the kind of structure expected in a real API: controllers, services, repositories, DTOs, database migrations, and clear error responses.
+
+## What It Shows
+
+- REST API design with Spring Boot
+- CRUD operations for internships
+- Status workflow with `OPEN`, `IN_PROGRESS`, `COMPLETED`, and `CANCELLED`
+- Request validation and consistent JSON errors
+- PostgreSQL persistence with Liquibase migrations
+- Filtering by status and company
+- Pagination and allow-listed sorting
+- Unit, controller, and integration tests
 
 ## Tech Stack
 
 - Java 21
-- Spring Boot 4.1.0
-- Maven
+- Spring Boot 4.1
 - Spring Web MVC
-- Jakarta Validation
 - Spring Data JPA
 - PostgreSQL
 - Liquibase
-- H2 Database for tests
-- JUnit 5
-- Mockito
-- MockMvc
+- H2 for integration tests
+- JUnit 5, Mockito, MockMvc
 
-## Project Status
-
-In development.
-
-Current module: `internship`.
-
-The internship module currently supports:
-
-- CRUD operations
-- request validation
-- clean JSON error responses
-- status updates with `PATCH`
-- filtering by status
-- filtering by company, case-insensitive and partial
-- pagination
-- sorting with an allow-list of fields
-- unit tests, controller tests, and integration tests
-
-## Database
-
-The application uses PostgreSQL for local development.
-
-Start PostgreSQL with Docker:
-
-```bash
-docker compose up -d
-```
-
-Connection settings:
-
-- JDBC URL: `jdbc:postgresql://localhost:5433/internflow`
-- Username: `internflow_user`
-- Password: `internflow_password`
-
-Liquibase runs automatically on application startup and manages the database schema.
-
-Current table:
-
-- `internships`
-
-Tests use an in-memory H2 database with Liquibase enabled.
-
-## Available Endpoints
-
-| Method | Endpoint                   | Description                    | Success Status                               |
-|--------|----------------------------|--------------------------------|----------------------------------------------|
-| GET    | `/health`                  | Checks if the API is running   | `200 OK`                                     |
-| GET    | `/internships`             | Retrieves internships          | `200 OK`                                     |
-| GET    | `/internships/{id}`        | Retrieves an internship by id  | `200 OK`, `404 Not Found`                    |
-| POST   | `/internships`             | Creates a new internship       | `201 Created`, `400 Bad Request`             |
-| PUT    | `/internships/{id}`        | Updates an existing internship | `200 OK`, `400 Bad Request`, `404 Not Found` |
-| PATCH  | `/internships/{id}/status` | Updates internship status      | `200 OK`, `400 Bad Request`, `404 Not Found` |
-| DELETE | `/internships/{id}`        | Deletes an internship by id    | `204 No Content`, `404 Not Found`            |
-
-## Internship Status Values
-
-- `OPEN`
-- `IN_PROGRESS`
-- `COMPLETED`
-- `CANCELLED`
-
-## Query Parameters
-
-`GET /internships` supports:
-
-| Parameter | Default  | Example             | Description                                 |
-|-----------|----------|---------------------|---------------------------------------------|
-| `status`  | none     | `status=OPEN`       | Filters by internship status                |
-| `company` | none     | `company=bm`        | Filters by company, partial and insensitive |
-| `page`    | `0`      | `page=1`            | Zero-based page number                      |
-| `size`    | `10`     | `size=5`            | Page size, must be greater than 0           |
-| `sort`    | `id,asc` | `sort=company,desc` | Sort field and direction                    |
-
-Allowed sort fields:
-
-- `id`
-- `title`
-- `company`
-- `durationInMonths`
-- `status`
-
-Allowed sort directions:
-
-- `asc`
-- `desc`
-
-Example:
-
-```http
-GET /internships?status=OPEN&company=bm&page=0&size=10&sort=company,desc
-```
-
-## Example Create Internship Request
-
-```json
-{
-  "title": "Cloud Internship",
-  "company": "AzureLab",
-  "durationInMonths": 4
-}
-```
-
-## Example Update Status Request
-
-```json
-{
-  "status": "IN_PROGRESS"
-}
-```
-
-## Validation And Errors
-
-Invalid requests return `400 Bad Request` with a JSON body.
-
-Example:
-
-```json
-{
-  "message": "Validation failed",
-  "errors": {
-    "title": "Title is required"
-  }
-}
-```
-
-## How To Run
+## Quick Start
 
 Start PostgreSQL:
 
@@ -150,7 +34,7 @@ Start PostgreSQL:
 docker compose up -d
 ```
 
-Run the application:
+Run the API:
 
 ```bash
 ./mvnw spring-boot:run
@@ -162,9 +46,13 @@ On Windows:
 mvnw.cmd spring-boot:run
 ```
 
-## How To Test
+The API starts on:
 
-Run all tests:
+```text
+http://localhost:8080
+```
+
+## Run Tests
 
 ```bash
 ./mvnw test
@@ -176,8 +64,34 @@ On Windows:
 mvnw.cmd test
 ```
 
-When running tests from Codex or a terminal, `JAVA_HOME` should point to JDK 21:
+## API Snapshot
 
-```text
-C:\Users\kamtewil\AppData\Local\Programs\Eclipse Adoptium\jdk-21.0.11.10-hotspot
+| Method | Endpoint                   | Description                    |
+|--------|----------------------------|--------------------------------|
+| GET    | `/health`                  | Check API health               |
+| GET    | `/internships`             | List internships               |
+| GET    | `/internships/{id}`        | Get one internship             |
+| POST   | `/internships`             | Create an internship           |
+| PUT    | `/internships/{id}`        | Update an internship           |
+| PATCH  | `/internships/{id}/status` | Update internship status       |
+| DELETE | `/internships/{id}`        | Delete an internship           |
+
+Example list query:
+
+```http
+GET /internships?status=OPEN&company=bm&page=0&size=10&sort=company,desc
 ```
+
+Example create request:
+
+```json
+{
+  "title": "Cloud Internship",
+  "company": "AzureLab",
+  "durationInMonths": 4
+}
+```
+
+## Current Status
+
+The internship module is functional and tested. The next planned step is to add JPA relationships with students, mentors, and tasks.
