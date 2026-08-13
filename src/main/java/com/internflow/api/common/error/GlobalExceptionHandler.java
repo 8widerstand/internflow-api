@@ -46,4 +46,17 @@ public class GlobalExceptionHandler {
         ValidationErrorResponse response = new ValidationErrorResponse("Invalid request parameter", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ValidationErrorResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
+        Map<String, String> errors = new HashMap<>();
+        String[] parts = exception.getMessage().split(": ", 2);
+        if (parts.length == 2) {
+            errors.put(parts[0], parts[1]);
+        } else {
+            errors.put("request", exception.getMessage());
+        }
+        ValidationErrorResponse response = new ValidationErrorResponse("Invalid request parameter", errors);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+    }
 }

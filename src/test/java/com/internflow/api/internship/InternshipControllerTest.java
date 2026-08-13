@@ -3,6 +3,10 @@ package com.internflow.api.internship;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -46,72 +50,86 @@ public class InternshipControllerTest {
     void getAllInternshipsShouldReturnOkWithInternships() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         InternshipResponse internship2 = internshipResponse(2L, "Backend Internship", "Siemens", 8, InternshipStatus.OPEN);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1, internship2), pageable, 2);
 
-        when(internshipService.findAllInternships(null, null)).thenReturn(List.of(internship1, internship2));
+        when(internshipService.findAllInternships(null, null, pageable)).thenReturn(pageResult);
 
         mockMvc.perform(get("/internships")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].title").value("Java Internship"))
-                .andExpect(jsonPath("$[1].title").value("Backend Internship"));
+                .andExpect(jsonPath("$.content.length()").value(2))
+                .andExpect(jsonPath("$.content[0].title").value("Java Internship"))
+                .andExpect(jsonPath("$.content[1].title").value("Backend Internship"));
     }
 
     @Test
     void getAllInternshipsShouldFilterByStatus() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        when(internshipService.findAllInternships(InternshipStatus.OPEN, null)).thenReturn(List.of(internship1));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
+
+        when(internshipService.findAllInternships(InternshipStatus.OPEN, null, pageable)).thenReturn(pageResult);
 
         mockMvc.perform(get("/internships?status=OPEN")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].status").value(InternshipStatus.OPEN.name()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].status").value(InternshipStatus.OPEN.name()));
 
-        verify(internshipService).findAllInternships(InternshipStatus.OPEN, null);
+        verify(internshipService).findAllInternships(InternshipStatus.OPEN, null, pageable);
     }
 
     @Test
     void getAllInternshipsShouldFilterByCompany() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        when(internshipService.findAllInternships(null, "bm")).thenReturn(List.of(internship1));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipService.findAllInternships(null, "bm", pageable)).thenReturn(pageResult);
 
         mockMvc.perform(get("/internships?company=bm")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].company").value("BMW"))
-                .andExpect(jsonPath("$[0].status").value(InternshipStatus.OPEN.name()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].company").value("BMW"))
+                .andExpect(jsonPath("$.content[0].status").value(InternshipStatus.OPEN.name()));
 
-        verify(internshipService).findAllInternships(null, "bm");
+        verify(internshipService).findAllInternships(null, "bm", pageable);
     }
 
     @Test
     void getAllInternshipsShouldFilterByStatusAndCompany() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        when(internshipService.findAllInternships(InternshipStatus.OPEN, "bm")).thenReturn(List.of(internship1));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipService.findAllInternships(InternshipStatus.OPEN, "bm", pageable)).thenReturn(pageResult);
 
         mockMvc.perform(get("/internships?status=OPEN&company=bm")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].company").value("BMW"))
-                .andExpect(jsonPath("$[0].status").value(InternshipStatus.OPEN.name()));
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].company").value("BMW"))
+                .andExpect(jsonPath("$.content[0].status").value(InternshipStatus.OPEN.name()));
 
-        verify(internshipService).findAllInternships(InternshipStatus.OPEN, "bm");
+        verify(internshipService).findAllInternships(InternshipStatus.OPEN, "bm", pageable);
     }
 
     @Test
     void getAllInternshipsShouldTreatBlankCompanyAsNoCompanyFilter() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        when(internshipService.findAllInternships(null, null)).thenReturn(List.of(internship1));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipService.findAllInternships(null, null, pageable)).thenReturn(pageResult);
 
         mockMvc.perform(get("/internships?company=  ")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
-        verify(internshipService).findAllInternships(null, null);
+                .andExpect(jsonPath("$.content.length()").value(1));
+
+        verify(internshipService).findAllInternships(null, null, pageable);
     }
 
     @Test
     void getAllInternshipsShouldTrimCompanyFilter() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        when(internshipService.findAllInternships(null, "BMW")).thenReturn(List.of(internship1));
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipService.findAllInternships(null, "BMW", pageable)).thenReturn(pageResult);
 
         mockMvc.perform(get("/internships?company= BMW ")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.content.length()").value(1));
 
-        verify(internshipService).findAllInternships(null, "BMW");
+        verify(internshipService).findAllInternships(null, "BMW", pageable);
     }
 
     @Test
@@ -121,7 +139,38 @@ public class InternshipControllerTest {
                 .andExpect(jsonPath("$.message").value("Invalid request parameter"))
                 .andExpect(jsonPath("$.errors.status").value("Invalid internship status"));
 
-        verify(internshipService, never()).findAllInternships(any(), any());
+        verify(internshipService, never()).findAllInternships(any(), any(), any(Pageable.class));
+    }
+
+    @Test
+    void getAllInternshipsShouldUsePageAndSizeParameters() throws Exception {
+        InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
+        Pageable pageable = PageRequest.of(1, 5);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipService.findAllInternships(null, null, pageable)).thenReturn(pageResult);
+
+        mockMvc.perform(get("/internships?page=1&size=5")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.size").value(5))
+                .andExpect(jsonPath("$.number").value(1));
+
+        verify(internshipService).findAllInternships(null, null, pageable);
+    }
+
+    @Test
+    void getAllInternshipsShouldReturnBadRequestWhenPageIsNegative() throws Exception {
+        mockMvc.perform(get("/internships?page=-1&size=10")).andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.message").value("Invalid request parameter"))
+        .andExpect(jsonPath("$.errors.page").value("Page must be greater than or equal to 0"));
+        verify(internshipService, never()).findAllInternships(any(), any(), any(Pageable.class));
+    }
+
+    @Test
+    void getAllInternshipsShouldReturnBadRequestWhenSizeIsZero() throws Exception {
+        mockMvc.perform(get("/internships?page=0&size=0")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid request parameter"))
+                .andExpect(jsonPath("$.errors.size").value("Size must be greater than 0"));
+
+        verify(internshipService, never()).findAllInternships(any(), any(), any(Pageable.class));
     }
 
     @Test

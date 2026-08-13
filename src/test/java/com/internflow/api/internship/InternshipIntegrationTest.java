@@ -64,7 +64,7 @@ class InternshipIntegrationTest {
         mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isCreated());
         mockMvc.perform(get("/internships")).andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Java Internship"));
+                .andExpect(jsonPath("$.content[0].title").value("Java Internship"));
     }
 
     @Test
@@ -144,9 +144,9 @@ class InternshipIntegrationTest {
 
         mockMvc.perform(get("/internships?status=COMPLETED"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("Completed Internship"))
-                .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].status").value(InternshipStatus.COMPLETED.name()));
+                .andExpect(jsonPath("$.content[0].title").value("Completed Internship"))
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.content[0].status").value(InternshipStatus.COMPLETED.name()));
 
     }
 
@@ -160,9 +160,9 @@ class InternshipIntegrationTest {
 
         mockMvc.perform(get("/internships?company=bm"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].title").value("BMW Internship"))
-                .andExpect(jsonPath("$[0].company").value("BMW"))
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.content[0].title").value("BMW Internship"))
+                .andExpect(jsonPath("$.content[0].company").value("BMW"))
+                .andExpect(jsonPath("$.content.length()").value(1));
     }
 
     @Test
@@ -187,9 +187,9 @@ class InternshipIntegrationTest {
 
         mockMvc.perform(get("/internships?status=COMPLETED&company=bm"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].status").value(InternshipStatus.COMPLETED.name()))
-                .andExpect(jsonPath("$[0].company").value("BMW"))
-                .andExpect(jsonPath("$.length()").value(1));
+                .andExpect(jsonPath("$.content[0].status").value(InternshipStatus.COMPLETED.name()))
+                .andExpect(jsonPath("$.content[0].company").value("BMW"))
+                .andExpect(jsonPath("$.content.length()").value(1));
 
     }
 
@@ -203,7 +203,7 @@ class InternshipIntegrationTest {
 
         mockMvc.perform(get("/internships?company= "))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(2));
+                .andExpect(jsonPath("$.content.length()").value(2));
 
     }
 
@@ -213,6 +213,31 @@ class InternshipIntegrationTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.message").value("Invalid request parameter"))
                 .andExpect(jsonPath("$.errors.status").value("Invalid internship status"));
+    }
+
+    @Test
+    void getInternshipsShouldReturnRequestedPage() throws Exception {
+        String requestBody1 = internshipRequestJson("BMW Internship", "BMW", 6);
+        String requestBody2 = internshipRequestJson("Siemens Internship", "Siemens", 8);
+        String requestBody3 = internshipRequestJson("Diehl Group Internship", "Diehl", 7);
+
+
+        internshipResponseBody(requestBody1);
+        internshipResponseBody(requestBody2);
+        internshipResponseBody(requestBody3);
+
+        mockMvc.perform(get("/internships?page=1&size=2")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.length()").value(1))
+                .andExpect(jsonPath("$.number").value(1))
+                .andExpect(jsonPath("$.size").value(2))
+                .andExpect(jsonPath("$.totalElements").value(3));
+    }
+
+    @Test
+    void getInternshipsShouldReturnBadRequestWhenPaginationParametersAreInvalid() throws Exception {
+        mockMvc.perform(get("/internships?page=-1&size=10")).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Invalid request parameter"))
+                .andExpect(jsonPath("$.errors.page").value("Page must be greater than or equal to 0"));
     }
 
     private String internshipResponseBody(String requestBody) throws Exception {

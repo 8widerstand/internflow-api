@@ -5,6 +5,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -199,4 +203,66 @@ public class InternshipServiceTest {
         verify(internshipRepository, never()).findAll();
     }
 
+    @Test
+    void findAllInternshipsShouldReturnPagedInternships() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        Internship internship2 = new Internship("Backend Internship", "Siemens", 8);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Internship> page = new PageImpl<>(List.of(internship1, internship2), pageable, 2);
+        when(internshipRepository.findAll(pageable)).thenReturn(page);
+
+        Page<InternshipResponse> result = internshipService.findAllInternships(null, null, pageable);
+
+        assertEquals(2, result.getContent().size());
+        assertEquals(internship1.getTitle(), result.getContent().get(0).title());
+        verify(internshipRepository).findAll(pageable);
+    }
+
+    @Test
+    void findAllInternshipsShouldReturnPagedInternshipsFilteredByStatus() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Internship> page = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipRepository.findByStatus(InternshipStatus.OPEN, pageable)).thenReturn(page);
+
+        Page<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN, null, pageable);
+        assertEquals(1, result.getContent().size());
+        assertEquals(internship1.getTitle(), result.getContent().get(0).title());
+
+        verify(internshipRepository).findByStatus(InternshipStatus.OPEN, pageable);
+        verify(internshipRepository, never()).findAll(pageable);
+    }
+
+    @Test
+    void findAllInternshipsShouldReturnPagedInternshipsFilteredByCompany() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Internship> page = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipRepository.findByCompanyContainingIgnoreCase("bm", pageable)).thenReturn(page);
+
+        Page<InternshipResponse> result = internshipService.findAllInternships(null, "bm", pageable);
+
+        assertEquals(1, result.getContent().size());
+        assertEquals(internship1.getTitle(), result.getContent().get(0).title());
+
+        verify(internshipRepository).findByCompanyContainingIgnoreCase(internship1.getCompany(), pageable);
+        verify(internshipRepository, never()).findAll(pageable);
+    }
+
+    @Test
+    void findAllInternshipsShouldReturnPagedInternshipsFilteredByStatusAndCompany() {
+        Internship internship1 = new Internship("Java Internship", "BMW", 6);
+        Pageable pageable = PageRequest.of(0, 10);
+        Page<Internship> page = new PageImpl<>(List.of(internship1), pageable, 1);
+        when(internshipRepository.findByStatusAndCompanyContainingIgnoreCase(InternshipStatus.OPEN, "bm", pageable))
+                .thenReturn(page);
+
+        Page<InternshipResponse> result = internshipService.findAllInternships(InternshipStatus.OPEN, "bm", pageable);
+
+        assertEquals(1, result.getContent().size());
+        assertEquals(internship1.getTitle(), result.getContent().get(0).title());
+
+        verify(internshipRepository).findByStatusAndCompanyContainingIgnoreCase(InternshipStatus.OPEN, internship1.getCompany(), pageable);
+        verify(internshipRepository, never()).findAll(pageable);
+    }
 }

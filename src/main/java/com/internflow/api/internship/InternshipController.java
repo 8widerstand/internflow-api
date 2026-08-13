@@ -1,11 +1,14 @@
 package com.internflow.api.internship;
 
 import jakarta.validation.Valid;
+import org.apache.coyote.BadRequestException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @RestController
 public class InternshipController {
@@ -16,12 +19,18 @@ public class InternshipController {
     }
 
     @GetMapping("/internships")
-    public List<InternshipResponse> internships(
+    public Page<InternshipResponse> internships(
             @RequestParam(required = false) InternshipStatus status,
-            @RequestParam(required = false) String company
+            @RequestParam(required = false) String company,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ) {
+        if (page < 0) throw new IllegalArgumentException("page: Page must be greater than or equal to 0");
+        if (size <= 0) throw new IllegalArgumentException("size: Size must be greater than 0");
+
         String companyValue = normalizeCompany(company);
-        return internshipService.findAllInternships(status, companyValue);
+        Pageable pageable = PageRequest.of(page, size);
+        return internshipService.findAllInternships(status, companyValue, pageable);
     }
 
     @GetMapping("/internships/{id}")

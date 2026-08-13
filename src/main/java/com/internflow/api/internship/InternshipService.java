@@ -1,5 +1,7 @@
 package com.internflow.api.internship;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -30,6 +32,24 @@ public class InternshipService {
         return internships.stream()
                 .map(this::toInternshipResponse)
                 .toList();
+    }
+
+    public Page<InternshipResponse> findAllInternships(
+            InternshipStatus status,
+            String company,
+            Pageable pageable
+    ) {
+        Page<Internship> internships;
+        if (status == null && company == null) {
+            internships = internshipRepository.findAll(pageable);
+        } else if (status != null && company == null) {
+            internships = internshipRepository.findByStatus(status, pageable);
+        } else if (status == null && company != null) {
+            internships = internshipRepository.findByCompanyContainingIgnoreCase(company, pageable);
+        } else {
+            internships = internshipRepository.findByStatusAndCompanyContainingIgnoreCase(status, company, pageable);
+        }
+        return internships.map(this::toInternshipResponse);
     }
 
     public Optional<InternshipResponse> findInternshipById(Long id) {
@@ -80,6 +100,7 @@ public class InternshipService {
         internshipRepository.deleteById(id);
         return true;
     }
+
 
     InternshipResponse toInternshipResponse(Internship internship) {
         return new InternshipResponse(
