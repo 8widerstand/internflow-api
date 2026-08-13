@@ -63,3 +63,33 @@ databaseChangeLog:
                   defaultValue: "OPEN"
                   constraints:
                     nullable: false
+  - changeSet:
+      id: "005-create-students-table"
+      author: "willy"
+      changes:
+        - createTable:
+            tableName: "students"
+            columns:
+              - column:
+                  name: "id"
+                  type: "BIGINT"
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "first_name"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "last_name"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "university"
+                  type: "VARCHAR(255)"
+              - column:
+                  name: "birth_date"
+                  type: "DATE"
