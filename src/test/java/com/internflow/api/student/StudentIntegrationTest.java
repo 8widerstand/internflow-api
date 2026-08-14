@@ -2,21 +2,33 @@ package com.internflow.api.student;
 
 import com.internflow.api.internship.Internship;
 import com.internflow.api.internship.InternshipRepository;
+import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @SpringBootTest
 @ActiveProfiles("test")
+@WebMvcTest(StudentController.class)
 public class StudentIntegrationTest {
+    @Autowired
+    MockMvc mockMvc;
 
+    @Autowired
+    StudentService studentService;
 
     @Autowired
     private StudentRepository studentRepository;
@@ -53,5 +65,25 @@ public class StudentIntegrationTest {
         assertThat(foundInternship.get().getStudent()).isNotNull();
         assertThat(foundInternship.get().getStudent().getId()).isEqualTo(savedStudent.getId());
         assertThat(foundInternship.get().getStudent().getFirstName()).isEqualTo("Magne");
+    }
+
+    @Test
+    void createStudentShouldPersistStudent() throws Exception {
+        String requestBody = """
+                {
+                  "firstName": "Magne",
+                  "lastName": "Candace",
+                  "university": "University of Douala",
+                  "birthDate": "2000-01-01"
+                }
+                """;
+
+        mockMvc.perform(post("/students").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.firstName").value("Magne"))
+                .andExpect(jsonPath("$.lastName").value("Candace"))
+                .andExpect(jsonPath("$.university").value("University of Douala"))
+                .andExpect(jsonPath("$.birthDate").value("2000-01-01"));
+
     }
 }
