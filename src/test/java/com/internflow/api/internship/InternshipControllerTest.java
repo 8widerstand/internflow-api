@@ -333,7 +333,7 @@ public class InternshipControllerTest {
             Integer durationInMonths,
             InternshipStatus status
     ) {
-        return new InternshipResponse(id, title, company, durationInMonths, status);
+        return new InternshipResponse(id, title, company, durationInMonths, status, null);
     }
 
     private String internshipRequestJson(

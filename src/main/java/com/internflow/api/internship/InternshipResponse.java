@@ -5,6 +5,7 @@ public record InternshipResponse(
         String title,
         String company,
         Integer durationInMonths,
-        InternshipStatus status
+        InternshipStatus status,
+        Long studentId
 ) {
 }

@@ -1,5 +1,7 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.student.StudentRepository;
+import com.internflow.api.student.StudentResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +11,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
+
+import java.time.LocalDate;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -26,11 +30,15 @@ class InternshipIntegrationTest {
     private InternshipRepository internshipRepository;
 
     @Autowired
+    private StudentRepository studentRepository;
+
+    @Autowired
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void cleanDatabase() {
         internshipRepository.deleteAll();
+        studentRepository.deleteAll();
     }
 
     @Test
@@ -194,6 +202,21 @@ class InternshipIntegrationTest {
     }
 
     @Test
+    void shouldAssignStudentToInternship() throws Exception {
+        String requestInternshipBody = internshipRequestJson("BMW Internship", "BMW", 6);
+        String requestStudentBody = studentRequestJson("Magne", "Candace", "University of Douala", LocalDate.parse("2000-01-01"));
+        String responseInternshipBody = internshipResponseBody(requestInternshipBody);
+        String responseStudentBody = studentResponseBody(requestStudentBody);
+
+        InternshipResponse created = objectMapper.readValue(responseInternshipBody, InternshipResponse.class);
+        StudentResponse student = objectMapper.readValue(responseStudentBody, StudentResponse.class);
+
+        mockMvc.perform(patch("/internships/" + created.id() + "/student/" + student.id()).contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.studentId").value(student.id()));
+    }
+
+    @Test
     void blankCompanyFilterShouldReturnAllInternships() throws Exception {
         String requestBody1 = internshipRequestJson("BMW Internship", "BMW", 6);
         String requestBody2 = internshipRequestJson("Siemens Internship", "Siemens", 8);
@@ -263,6 +286,12 @@ class InternshipIntegrationTest {
                 .andReturn().getResponse().getContentAsString();
     }
 
+    private String studentResponseBody(String requestBody) throws Exception {
+        return mockMvc.perform(post("/students").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+    }
+
     private String internshipRequestJson(
             String title,
             String company,
@@ -275,5 +304,21 @@ class InternshipIntegrationTest {
                     "durationInMonths": %d
                 }
                 """.formatted(title, company, durationInMonths);
+    }
+
+    private String studentRequestJson(
+            String firstName,
+            String lastName,
+            String university,
+            LocalDate birthDate
+    ) {
+        return """
+                        {
+                            "firstName": "%s",
+                            "lastName": "%s",
+                            "university": "%s",
+                            "birthDate": "%s"
+                        }
+                """.formatted(firstName, lastName, university, birthDate);
     }
 }
