@@ -36,4 +36,15 @@ public class TaskController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @PatchMapping("/tasks/{taskId}/completed")
+    ResponseEntity<TaskResponse> updateTaskCompleted(
+            @PathVariable Long taskId,
+            @Valid @RequestBody UpdateTaskCompletedRequest completed
+    ){
+        return this.service.updateCompletedTask(taskId, completed)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+
+    }
 }

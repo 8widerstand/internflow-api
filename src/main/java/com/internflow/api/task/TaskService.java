@@ -42,6 +42,16 @@ public class TaskService {
         return Optional.of(toTasksResponse(savedTask));
     }
 
+    public Optional<TaskResponse> updateCompletedTask(Long taskId, UpdateTaskCompletedRequest request) {
+        Task task = tasksRepository.findById(taskId).orElse(null);
+        if (task == null) {
+            return Optional.empty();
+        }
+        task.updateCompletedTasks(request.completed());
+        Task savedTask = tasksRepository.save(task);
+        return Optional.of(toTasksResponse(savedTask));
+    }
+
     private TaskResponse toTasksResponse(Task task) {
         Internship internship = task.getInternship();
         Long internshipId = null;
