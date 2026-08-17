@@ -83,6 +83,12 @@ public class TasksIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(0));
     }
 
+    @Test
+    void getTasksShouldReturnNotFoundWhenInternshipIsNotFound() throws Exception {
+        mockMvc.perform(get("/internships/99/tasks"))
+                .andExpect(status().isNotFound());
+    }
+
     private String internshipResponseBody(String requestBody) throws Exception {
         return mockMvc.perform(post("/internships").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isCreated())

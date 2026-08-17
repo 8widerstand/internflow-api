@@ -17,17 +17,15 @@ public class TaskService {
         this.internshipRepository = internshipRepository;
     }
 
-    public List<TaskResponse> findInternshipTasks(Long internshipId) {
+    public Optional<List<TaskResponse>> findInternshipTasks(Long internshipId) {
         Internship internship = internshipRepository.findById(internshipId).orElse(null);
         if (internship == null) {
-            return List.of();
+            return Optional.empty();
         }
 
         List<Task> tasks = tasksRepository.findByInternship(internship);
-
-        return tasks.stream()
-                .map(this::toTasksResponse)
-                .toList();
+        List<TaskResponse> taskResponses = tasks.stream().map(this::toTasksResponse).toList();
+        return Optional.of(taskResponses);
     }
 
     public Optional<TaskResponse> createTask(CreateTaskRequest task, Long internshipId) {

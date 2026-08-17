@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @RestController
 public class TaskController {
-    private TaskService service;
+    private final TaskService service;
 
     public TaskController(TaskService service) {
         this.service = service;
@@ -22,7 +22,7 @@ public class TaskController {
             @Valid @RequestBody CreateTaskRequest request
     ) {
         Optional<TaskResponse> task = this.service.createTask(request, internshipId);
-        if (task.isEmpty()){
+        if (task.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
         URI location = URI.create("/internships/" + internshipId + "/tasks");
@@ -31,7 +31,9 @@ public class TaskController {
     }
 
     @GetMapping("/internships/{internshipId}/tasks")
-    List<TaskResponse> findInternshipTasks(@PathVariable Long internshipId) {
-        return this.service.findInternshipTasks(internshipId);
+    ResponseEntity<List<TaskResponse>> findInternshipTasks(@PathVariable Long internshipId) {
+        return service.findInternshipTasks(internshipId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 }
