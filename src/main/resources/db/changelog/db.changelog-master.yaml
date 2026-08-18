@@ -150,3 +150,48 @@ databaseChangeLog:
             referencedTableName: "internships"
             referencedColumnNames: "id"
             constraintName: "fk_tasks_internship"
+  - changeSet:
+      id: "008-create-mentors-table"
+      author: "willy"
+      changes:
+        - createTable:
+            tableName: "mentors"
+            columns:
+              - column:
+                  name: "id"
+                  type: "BIGINT"
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "first_name"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "last_name"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "email"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+  - changeSet:
+      id: "009-add-mentor-id-to-internships"
+      author: "willy"
+      changes:
+        - addColumn:
+            tableName: "internships"
+            columns:
+              - column:
+                  name: "mentor_id"
+                  type: "BIGINT"
+        - addForeignKeyConstraint:
+            baseTableName: "internships"
+            baseColumnNames: "mentor_id"
+            referencedTableName: "mentors"
+            referencedColumnNames: "id"
+            constraintName: "fk_internships_mentor"

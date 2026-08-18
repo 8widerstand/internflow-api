@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.mentor.Mentor;
 import com.internflow.api.student.Student;
 import jakarta.persistence.*;
 
@@ -20,6 +21,10 @@ public class Internship {
     @ManyToOne
     @JoinColumn(name = "student_id")
     private Student student;
+
+    @ManyToOne
+    @JoinColumn(name = "mentor_id")
+    Mentor mentor;
 
     protected Internship() {
     }
@@ -45,6 +50,8 @@ public class Internship {
         this.student = student;
     }
 
+    public void assignMentor(Mentor mentor) {this.mentor = mentor; }
+
     public Long getId() {
         return id;
     }
@@ -67,5 +74,9 @@ public class Internship {
 
     public Student getStudent() {
         return student;
+    }
+
+    public Mentor getMentor() {
+        return mentor;
     }
 }

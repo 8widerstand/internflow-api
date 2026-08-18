@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.mentor.MentorResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -333,7 +334,7 @@ public class InternshipControllerTest {
             Integer durationInMonths,
             InternshipStatus status
     ) {
-        return new InternshipResponse(id, title, company, durationInMonths, status, null);
+        return new InternshipResponse(id, title, company, durationInMonths, status, null, null);
     }
 
     private String internshipRequestJson(

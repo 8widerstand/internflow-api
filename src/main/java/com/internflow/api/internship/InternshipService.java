@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.mentor.Mentor;
 import com.internflow.api.student.Student;
 import com.internflow.api.student.StudentRepository;
 import org.springframework.data.domain.Page;
@@ -100,19 +101,23 @@ public class InternshipService {
     }
 
 
-    InternshipResponse toInternshipResponse(Internship internship) {
+    public InternshipResponse toInternshipResponse(Internship internship) {
         Student student = internship.getStudent();
+        Mentor mentor = internship.getMentor();
+        Long mentorId = null;
         Long studentId = null;
-        if (student != null) {
-            studentId = student.getId();
-        }
+
+        if (student != null) {studentId = student.getId();}
+        if (mentor != null) {mentorId = mentor.getId();}
+
         return new InternshipResponse(
                 internship.getId(),
                 internship.getTitle(),
                 internship.getCompany(),
                 internship.getDurationInMonths(),
                 internship.getStatus(),
-                studentId
+                studentId,
+                mentorId
         );
     }
 }

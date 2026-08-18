@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.mentor.MentorResponse;
 import com.internflow.api.student.StudentRepository;
 import com.internflow.api.student.StudentResponse;
 import org.junit.jupiter.api.BeforeEach;
@@ -155,7 +156,6 @@ class InternshipIntegrationTest {
                 .andExpect(jsonPath("$.content[0].title").value("Completed Internship"))
                 .andExpect(jsonPath("$.content.length()").value(1))
                 .andExpect(jsonPath("$.content[0].status").value(InternshipStatus.COMPLETED.name()));
-
     }
 
     @Test
@@ -278,6 +278,41 @@ class InternshipIntegrationTest {
                 .andExpect(jsonPath("$.content[0].company").value("Siemens"))
                 .andExpect(jsonPath("$.content[1].company").value("Diehl"))
                 .andExpect(jsonPath("$.content[2].company").value("BMW"));
+    }
+
+    @Test
+    void assignMentorToInternshipShouldReturnUpdatedInternship() throws Exception {
+        String requestMentorBody = mentorRequestJson("Ada", "Bienvenue", "ada@example.com");
+        String requestInternshipBody = internshipRequestJson("Java Internship", "BMW", 6);
+        String mentorResponse = mentorResponseBody(requestMentorBody);
+        String internshipResponse = internshipResponseBody(requestInternshipBody);
+
+        MentorResponse createdMentor = objectMapper.readValue(mentorResponse, MentorResponse.class);
+        InternshipResponse createdInternship = objectMapper.readValue(internshipResponse, InternshipResponse.class);
+
+        mockMvc.perform(patch("/internships/" + createdInternship.id() + "/mentor/" + createdMentor.id()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mentorId").value(createdMentor.id()));
+    }
+
+    private String mentorRequestJson(
+            String firstName,
+            String lastName,
+            String email
+    ) {
+        return """
+                        {
+                            "firstName": "%s",
+                            "lastName": "%s",
+                            "email": "%s"
+                        }
+                """.formatted(firstName, lastName, email);
+    }
+
+    private String mentorResponseBody(String requestBody) throws Exception {
+        return mockMvc.perform(post("/mentors").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
     }
 
     private String internshipResponseBody(String requestBody) throws Exception {
