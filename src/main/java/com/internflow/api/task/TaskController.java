@@ -38,13 +38,11 @@ public class TaskController {
     }
 
     @PatchMapping("/tasks/{taskId}/completed")
-    ResponseEntity<TaskResponse> updateTaskCompleted(
+    TaskResponse  updateTaskCompleted(
             @PathVariable Long taskId,
             @Valid @RequestBody UpdateTaskCompletedRequest completed
     ){
-        return this.service.updateCompletedTask(taskId, completed)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return this.service.updateCompletedTask(taskId, completed);
 
     }
 }

@@ -14,6 +14,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,6 +32,14 @@ public class StudentIntegrationTest {
 
     @Autowired
     private InternshipRepository internshipRepository;
+
+    @Test
+    void getStudentByIdShouldReturnNotFoundWhenStudentDoesNotExist() throws Exception {
+        mockMvc.perform(get("/students/99"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").exists());
+    }
 
     @Test
     void shouldSaveAndFindStudent() {

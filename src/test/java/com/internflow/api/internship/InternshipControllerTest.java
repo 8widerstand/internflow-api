@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.common.error.ResourceNotFoundException;
 import com.internflow.api.mentor.MentorResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +13,12 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Optional.empty;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -25,11 +30,14 @@ public class InternshipControllerTest {
     @MockitoBean
     private InternshipService internshipService;
 
+    @MockitoBean
+    private InternshipRepository internshipRepository;
+
     @Test
     void getInternshipByIdShouldReturnOkWhenInternshipExists() throws Exception {
         InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
 
-        when(internshipService.findInternshipById(1L)).thenReturn(Optional.of(response));
+        when(internshipService.findInternshipById(1L)).thenReturn(response);
 
         mockMvc.perform(get("/internships/1")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Java Internship"))
@@ -40,7 +48,8 @@ public class InternshipControllerTest {
 
     @Test
     void getInternshipByIdShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
-        when(internshipService.findInternshipById(1L)).thenReturn(Optional.empty());
+        when(internshipService.findInternshipById(1L))
+                .thenThrow(new ResourceNotFoundException("Internship not found with id: 1"));
         mockMvc.perform(get("/internships/1")).andExpect(status().isNotFound());
     }
 
@@ -48,7 +57,7 @@ public class InternshipControllerTest {
     void getAllInternshipsShouldReturnOkWithInternships() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         InternshipResponse internship2 = internshipResponse(2L, "Backend Internship", "Siemens", 8, InternshipStatus.OPEN);
-        Pageable pageable = PageRequest.of(0, 10,Sort.by(Sort.Direction.ASC, "id"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"));
         Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1, internship2), pageable, 2);
 
         when(internshipService.findAllInternships(null, null, pageable)).thenReturn(pageResult);
@@ -62,7 +71,7 @@ public class InternshipControllerTest {
     @Test
     void getAllInternshipsShouldFilterByStatus() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        Pageable pageable = PageRequest.of(0, 10,Sort.by(Sort.Direction.ASC, "id"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"));
         Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
 
         when(internshipService.findAllInternships(InternshipStatus.OPEN, null, pageable)).thenReturn(pageResult);
@@ -77,7 +86,7 @@ public class InternshipControllerTest {
     @Test
     void getAllInternshipsShouldFilterByCompany() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        Pageable pageable = PageRequest.of(0, 10,Sort.by(Sort.Direction.ASC, "id"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"));
         Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
         when(internshipService.findAllInternships(null, "bm", pageable)).thenReturn(pageResult);
 
@@ -120,7 +129,7 @@ public class InternshipControllerTest {
     @Test
     void getAllInternshipsShouldTrimCompanyFilter() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
-        Pageable pageable = PageRequest.of(0, 10,Sort.by(Sort.Direction.ASC, "id"));
+        Pageable pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.ASC, "id"));
         Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
         when(internshipService.findAllInternships(null, "BMW", pageable)).thenReturn(pageResult);
 
@@ -252,7 +261,7 @@ public class InternshipControllerTest {
     void updateInternshipStatusShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
         String requestBody = statusRequestJson(InternshipStatus.COMPLETED);
 
-        when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED)).thenReturn(Optional.empty());
+        when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED)).thenReturn(empty());
         mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isNotFound());
     }
@@ -288,7 +297,7 @@ public class InternshipControllerTest {
     @Test
     void updateInternshipShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
         String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
-        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(Optional.empty());
+        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(empty());
         mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isNotFound());
     }
@@ -315,16 +324,10 @@ public class InternshipControllerTest {
 
     @Test
     void deleteInternshipShouldReturnNoContentWhenInternshipExists() throws Exception {
-        when(internshipService.delete(1L)).thenReturn(true);
         mockMvc.perform(delete("/internships/1"))
                 .andExpect(status().isNoContent());
-    }
 
-    @Test
-    void deleteInternshipShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
-        when(internshipService.delete(1L)).thenReturn(false);
-        mockMvc.perform(delete("/internships/1"))
-                .andExpect(status().isNotFound());
+        verify(internshipService).delete(1L);
     }
 
     private InternshipResponse internshipResponse(

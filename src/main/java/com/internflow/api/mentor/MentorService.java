@@ -1,9 +1,9 @@
 package com.internflow.api.mentor;
 
+import com.internflow.api.common.error.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MentorService {
@@ -19,8 +19,10 @@ public class MentorService {
                 .toList();
     }
 
-    public Optional<MentorResponse> findMentorById(Long id) {
-        return this.mentorRepository.findById(id).map(this::toMentorResponse);
+    public MentorResponse findMentorById(Long id) {
+        return mentorRepository.findById(id)
+                .map(this::toMentorResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Mentor not found with id: " + id));
     }
 
     public MentorResponse createMentor(CreateMentorRequest request) {

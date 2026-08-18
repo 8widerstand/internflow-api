@@ -78,7 +78,9 @@ public class MentorIntegrationTest {
     @Test
     void getMentorByIdShouldReturnNotFoundWhenMentorDoesNotExist() throws Exception {
         mockMvc.perform(get("/mentors/1")).
-                andExpect(status().isNotFound());
+                andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").exists());
     }
 
     @Test

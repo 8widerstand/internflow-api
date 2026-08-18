@@ -121,7 +121,9 @@ public class TasksIntegrationTest {
                             """;
 
         mockMvc.perform(patch("/tasks/99/completed").contentType(MediaType.APPLICATION_JSON).content(updatedBody))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").exists());
     }
 
     private String internshipResponseBody(String requestBody) throws Exception {

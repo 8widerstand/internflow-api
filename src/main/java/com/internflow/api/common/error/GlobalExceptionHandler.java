@@ -59,4 +59,13 @@ public class GlobalExceptionHandler {
         ValidationErrorResponse response = new ValidationErrorResponse("Invalid request parameter", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ValidationErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("resource", exception.getMessage());
+
+        ValidationErrorResponse response = new ValidationErrorResponse("Resource not found", errors);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+    }
 }

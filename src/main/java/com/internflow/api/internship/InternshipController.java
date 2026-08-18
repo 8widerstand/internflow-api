@@ -35,10 +35,8 @@ public class InternshipController {
     }
 
     @GetMapping("/internships/{id}")
-    public ResponseEntity<InternshipResponse> getInternshipById(@PathVariable Long id) {
-        return internshipService.findInternshipById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public InternshipResponse getInternshipById(@PathVariable Long id) {
+        return internshipService.findInternshipById(id);
     }
 
     @PostMapping("/internships")
@@ -91,10 +89,8 @@ public class InternshipController {
 
     @DeleteMapping("/internships/{id}")
     public ResponseEntity<Void> deleteInternship(@PathVariable Long id) {
-        if (internshipService.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        internshipService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     private String normalizeCompany(String company) {

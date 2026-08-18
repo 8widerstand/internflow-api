@@ -21,9 +21,8 @@ public class MentorController {
     }
 
     @GetMapping("/mentors/{id}")
-    public ResponseEntity<MentorResponse> getMentorById(@PathVariable Long id) {
-        return this.mentorService.findMentorById(id)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public MentorResponse getMentorById(@PathVariable Long id) {
+        return this.mentorService.findMentorById(id);
     }
 
     @PostMapping("/mentors")

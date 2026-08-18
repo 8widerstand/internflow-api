@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.common.error.ResourceNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -24,32 +25,17 @@ public class InternshipServiceTest {
     @InjectMocks
     private InternshipService internshipService;
 
-    @Test
-    void deleteShouldReturnFalseWhenInternshipDoesNotExist() {
-        when(internshipRepository.existsById(1L)).thenReturn(false);
-
-        boolean result = internshipService.delete(1L);
-
-        assertFalse(result);
-        verify(internshipRepository, never()).deleteById(anyLong());
-    }
 
     @Test
-    void deleteShouldReturnTrueWhenInternshipDoesExist() {
-        when(internshipRepository.existsById(1L)).thenReturn(true);
-
-        boolean result = internshipService.delete(1L);
-
-        assertTrue(result);
-        verify(internshipRepository).deleteById(1L);
-    }
-
-    @Test
-    void findInternshipByIdShouldReturnEmptyWhenInternshipDoesNotExist() {
+    void findInternshipByIdShouldThrowWhenInternshipDoesNotExist() {
         when(internshipRepository.findById(1L)).thenReturn(Optional.empty());
 
-        Optional<InternshipResponse> result = internshipService.findInternshipById(1L);
-        assertTrue(result.isEmpty());
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> internshipService.findInternshipById(1L)
+        );
+
+        assertEquals("Internship not found with id: 1", exception.getMessage());
     }
 
     @Test
@@ -57,10 +43,8 @@ public class InternshipServiceTest {
         Internship internship = new Internship("Java Internship", "BMW", 6);
         when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
 
-        Optional<InternshipResponse> result = internshipService.findInternshipById(1L);
-        assertTrue(result.isPresent());
+        InternshipResponse response = internshipService.findInternshipById(1L);
 
-        InternshipResponse response = result.get();
         assertEquals(internship.getTitle(), response.title());
         assertEquals(internship.getCompany(), response.company());
         assertEquals(internship.getDurationInMonths(), response.durationInMonths());
@@ -196,5 +180,27 @@ public class InternshipServiceTest {
 
         verify(internshipRepository).findByStatusAndCompanyContainingIgnoreCase(InternshipStatus.OPEN, "bm", pageable);
         verify(internshipRepository, never()).findAll(pageable);
+    }
+
+    @Test
+    void deleteShouldDeleteInternshipWhenInternshipExists() {
+        when(internshipRepository.existsById(1L)).thenReturn(true);
+
+        internshipService.delete(1L);
+
+        verify(internshipRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteShouldThrowWhenInternshipDoesNotExist() {
+        when(internshipRepository.existsById(1L)).thenReturn(false);
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> internshipService.delete(1L)
+        );
+
+        assertEquals("Internship not found with id: 1", exception.getMessage());
+        verify(internshipRepository, never()).deleteById(anyLong());
     }
 }

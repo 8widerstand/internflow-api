@@ -21,9 +21,8 @@ public class StudentController {
     }
 
     @GetMapping("/students/{id}")
-    public ResponseEntity<StudentResponse> getStudentById(@PathVariable Long id) {
-        return studentService.findStudentById(id)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+    public StudentResponse getStudentById(@PathVariable Long id) {
+        return studentService.findStudentById(id);
     }
 
     @PostMapping("/students")

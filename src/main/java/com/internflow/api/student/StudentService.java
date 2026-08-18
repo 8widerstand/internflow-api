@@ -1,9 +1,9 @@
 package com.internflow.api.student;
 
+import com.internflow.api.common.error.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class StudentService {
@@ -13,9 +13,9 @@ public class StudentService {
         this.studentRepository = studentRepository;
     }
 
-    public Optional<StudentResponse> findStudentById(Long id) {
+    public StudentResponse findStudentById(Long id) {
         return studentRepository.findById(id)
-                .map(this::toResponse);
+                .map(this::toResponse).orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));
     }
 
     public List<StudentResponse> findAllStudents() {

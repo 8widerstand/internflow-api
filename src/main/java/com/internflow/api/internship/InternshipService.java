@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.common.error.ResourceNotFoundException;
 import com.internflow.api.mentor.Mentor;
 import com.internflow.api.mentor.MentorRepository;
 import com.internflow.api.student.Student;
@@ -40,9 +41,10 @@ public class InternshipService {
         return internships.map(this::toInternshipResponse);
     }
 
-    public Optional<InternshipResponse> findInternshipById(Long id) {
+    public InternshipResponse findInternshipById(Long id) {
         return internshipRepository.findById(id)
-                .map(this::toInternshipResponse);
+                .map(this::toInternshipResponse)
+                .orElseThrow(() -> new ResourceNotFoundException("Internship not found with id: " + id));
     }
 
     public InternshipResponse create(CreateInternshipRequest request) {
@@ -93,13 +95,11 @@ public class InternshipService {
         return Optional.of(toInternshipResponse(savedInternship));
     }
 
-    public boolean delete(Long id) {
+    public void delete(Long id) {
         if (!internshipRepository.existsById(id)) {
-            return false;
+           throw new ResourceNotFoundException("Internship not found with id: " + id);
         }
-
         internshipRepository.deleteById(id);
-        return true;
     }
 
     public Optional<InternshipResponse> assignMentorToInternship(Long internshipId, Long mentorId) {

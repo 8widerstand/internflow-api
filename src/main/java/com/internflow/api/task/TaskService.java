@@ -1,5 +1,6 @@
 package com.internflow.api.task;
 
+import com.internflow.api.common.error.ResourceNotFoundException;
 import com.internflow.api.internship.Internship;
 import com.internflow.api.internship.InternshipRepository;
 import org.springframework.stereotype.Service;
@@ -42,14 +43,13 @@ public class TaskService {
         return Optional.of(toTasksResponse(savedTask));
     }
 
-    public Optional<TaskResponse> updateCompletedTask(Long taskId, UpdateTaskCompletedRequest request) {
-        Task task = tasksRepository.findById(taskId).orElse(null);
-        if (task == null) {
-            return Optional.empty();
-        }
+    public TaskResponse updateCompletedTask(Long taskId, UpdateTaskCompletedRequest request) {
+        Task task = tasksRepository.findById(taskId)
+                        .orElseThrow(() -> new ResourceNotFoundException("Task not found with id: " + taskId));
+
         task.updateCompletedTasks(request.completed());
         Task savedTask = tasksRepository.save(task);
-        return Optional.of(toTasksResponse(savedTask));
+        return toTasksResponse(savedTask);
     }
 
     private TaskResponse toTasksResponse(Task task) {

@@ -2,7 +2,7 @@
 
 **A production-style REST API for managing internships, built from scratch with Spring Boot.**
 
-Internships · Students · Mentors · Tasks — full CRUD, validation, pagination, and tested.
+Internships · Students · Mentors · Tasks — validation, pagination, relationships, and tests.
 
 ## Tech Stack
 
@@ -42,9 +42,9 @@ standards.
                         ┌──────────┐       ┌──────────────┐       ┌──────────┐
                         │  Student │ 1───* │  Internship  │ *───1 │  Mentor  │
                         └──────────┘       └──────┬───────┘       └──────────┘
-                          │ 1
-                        |
-                         * 
+                         │ 1
+                       |
+                        * 
                         ┌──────────┐
                         │   Task   │
                         └──────────┘
@@ -58,7 +58,8 @@ An internship can have one assigned student, one assigned mentor, and multiple t
 
 **Core API**
 
-- Full CRUD on internships, students, and mentors
+- Full CRUD on internships
+- Create and retrieve students and mentors
 - Task creation and completion tracking per internship
 - Status workflow updates on internships
 
@@ -71,7 +72,7 @@ An internship can have one assigned student, one assigned mentor, and multiple t
 **Persistence & ops**
 
 - PostgreSQL with Liquibase-managed schema migrations
-- JPA relationship mapping (one-to-many across Student, Mentor, Task)
+- JPA relationship mapping between internships, students, mentors, and tasks
 - Dockerized database for local development
 
 **Testing**
@@ -83,8 +84,6 @@ An internship can have one assigned student, one assigned mentor, and multiple t
 ## API Endpoints
 
 ### Internships
-
-#### http
 
 | Resource    | Method | Endpoint                                          | Description                    |
 |-------------|--------|---------------------------------------------------|--------------------------------|
@@ -99,8 +98,6 @@ An internship can have one assigned student, one assigned mentor, and multiple t
 
 ### Students
 
-#### - http
-
 | Resource | Method | Endpoint         | Description |
 |----------|--------|------------------|-------------|
 | Students | GET    | `/students`      | List all    |
@@ -109,8 +106,6 @@ An internship can have one assigned student, one assigned mentor, and multiple t
 
 ### Mentors
 
-#### - http
-
 | Resource | Method | Endpoint        | Description |
 |----------|--------|-----------------|-------------|
 | Mentors  | GET    | `/mentors`      | List all    |
@@ -118,8 +113,6 @@ An internship can have one assigned student, one assigned mentor, and multiple t
 | Mentors  | POST   | `/mentors`      | Create      |
 
 ### Tasks
-
-#### http
 
 | Resource | Method | Endpoint                            | Description               |
 |----------|--------|-------------------------------------|---------------------------|
