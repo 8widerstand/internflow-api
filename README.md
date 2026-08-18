@@ -1,97 +1,170 @@
 # InternFlow API
 
-InternFlow is a Spring Boot REST API for managing internships with clean backend fundamentals: persistence, validation, filtering, pagination, sorting, and automated tests.
+**A production-style REST API for managing internships, built from scratch with Spring Boot.**
 
-The project is built as a practical Java backend learning project, but with the kind of structure expected in a real API: controllers, services, repositories, DTOs, database migrations, and clear error responses.
-
-## What It Shows
-
-- REST API design with Spring Boot
-- CRUD operations for internships
-- Status workflow with `OPEN`, `IN_PROGRESS`, `COMPLETED`, and `CANCELLED`
-- Request validation and consistent JSON errors
-- PostgreSQL persistence with Liquibase migrations
-- Filtering by status and company
-- Pagination and allow-listed sorting
-- Unit, controller, and integration tests
+Internships · Students · Mentors · Tasks — full CRUD, validation, pagination, and tested.
 
 ## Tech Stack
 
-- Java 21
-- Spring Boot 4.1
-- Spring Web MVC
-- Spring Data JPA
-- PostgreSQL
-- Liquibase
-- H2 for integration tests
-- JUnit 5, Mockito, MockMvc
+![Java](https://img.shields.io/badge/Java-21-ED8B00?style=flat&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1-6DB33F?style=flat&logo=springboot&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)
+![Liquibase](https://img.shields.io/badge/Liquibase-2962FF?style=flat&logo=liquibase&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-JUnit%205%20%2B%20MockMvc-25A162?style=flat)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
 
-## Quick Start
 
-Start PostgreSQL:
 
-```bash
-docker compose up -d
+---
+
+## Why This Project
+
+Most tutorial projects stop at "CRUD with Spring Boot." InternFlow goes further — it handles real backend concerns:
+structured validation errors, paginated responses with allow-listed sorting, JPA relationship management, database
+migrations with Liquibase, and integration tests running on H2. This is a learning project built to production
+standards.
+
+## Table of Contents
+
+- [Domain Model](#domain-model)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [API Endpoints](#api-endpoints)
+- [Getting Started](#getting-started)
+- [Running Tests](#running-tests)
+- [Roadmap](#roadmap)
+
+## Domain Model
+
+<div align="center">
+
+```
+                        ┌──────────┐       ┌──────────────┐       ┌──────────┐
+                        │  Student │ 1───* │  Internship  │ *───1 │  Mentor  │
+                        └──────────┘       └──────┬───────┘       └──────────┘
+                          │ 1
+                        |
+                         * 
+                        ┌──────────┐
+                        │   Task   │
+                        └──────────┘
+                    
 ```
 
-Run the API:
+</div>
+An internship can have one assigned student, one assigned mentor, and multiple tasks.
 
-```bash
-./mvnw spring-boot:run
-```
+## Features
 
-On Windows:
+**Core API**
 
-```cmd
-mvnw.cmd spring-boot:run
-```
+- Full CRUD on internships, students, and mentors
+- Task creation and completion tracking per internship
+- Status workflow updates on internships
 
-The API starts on:
+**Data integrity & querying**
 
-```text
-http://localhost:8080
-```
+- Pagination with allow-listed sort fields — no arbitrary column access
+- Filtering by status and company
+- Structured validation error responses (field-level feedback, not generic 400s)
 
-## Run Tests
+**Persistence & ops**
 
-```bash
-./mvnw test
-```
+- PostgreSQL with Liquibase-managed schema migrations
+- JPA relationship mapping (one-to-many across Student, Mentor, Task)
+- Dockerized database for local development
 
-On Windows:
+**Testing**
 
-```cmd
-mvnw.cmd test
-```
+- Integration tests with H2 in-memory database
+- MockMvc for controller-level testing
+- JUnit 5 + Mockito
 
-## API Snapshot
+## API Endpoints
 
-| Method | Endpoint                   | Description                    |
-|--------|----------------------------|--------------------------------|
-| GET    | `/health`                  | Check API health               |
-| GET    | `/internships`             | List internships               |
-| GET    | `/internships/{id}`        | Get one internship             |
-| POST   | `/internships`             | Create an internship           |
-| PUT    | `/internships/{id}`        | Update an internship           |
-| PATCH  | `/internships/{id}/status` | Update internship status       |
-| DELETE | `/internships/{id}`        | Delete an internship           |
+### Internships
 
-Example list query:
+#### http
+
+| Resource    | Method | Endpoint                                          | Description                    |
+|-------------|--------|---------------------------------------------------|--------------------------------|
+| Internships | GET    | `/internships`                                    | List, paginated and filterable |
+| Internships | GET    | `/internships/{id}`                               | Get by ID                      |
+| Internships | POST   | `/internships`                                    | Create                         |
+| Internships | PUT    | `/internships/{id}`                               | Update                         |
+| Internships | PATCH  | `/internships/{id}/status`                        | Update status                  |
+| Internships | PATCH  | `/internships/{internshipId}/student/{studentId}` | Assign student                 |
+| Internships | PATCH  | `/internships/{internshipId}/mentor/{mentorId}`   | Assign mentor                  |
+| Internships | DELETE | `/internships/{id}`                               | Delete                         |
+
+### Students
+
+#### - http
+
+| Resource | Method | Endpoint         | Description |
+|----------|--------|------------------|-------------|
+| Students | GET    | `/students`      | List all    |
+| Students | GET    | `/students/{id}` | Get by ID   |
+| Students | POST   | `/students`      | Create      |
+
+### Mentors
+
+#### - http
+
+| Resource | Method | Endpoint        | Description |
+|----------|--------|-----------------|-------------|
+| Mentors  | GET    | `/mentors`      | List all    |
+| Mentors  | GET    | `/mentors/{id}` | Get by ID   |
+| Mentors  | POST   | `/mentors`      | Create      |
+
+### Tasks
+
+#### http
+
+| Resource | Method | Endpoint                            | Description               |
+|----------|--------|-------------------------------------|---------------------------|
+| Tasks    | GET    | `/internships/{internshipId}/tasks` | List tasks for internship |
+| Tasks    | POST   | `/internships/{internshipId}/tasks` | Create task               |
+| Tasks    | PATCH  | `/tasks/{taskId}/completed`         | Mark task completed       |
+
+### Example query
 
 ```http
 GET /internships?status=OPEN&company=bm&page=0&size=10&sort=company,desc
 ```
 
-Example create request:
+## Getting Started
 
-```json
-{
-  "title": "Cloud Internship",
-  "company": "AzureLab",
-  "durationInMonths": 4
-}
+**Prerequisites:** Docker, JDK 21, Maven.
+
+**1. Start the database**
+
+```bash
+docker compose up -d
 ```
 
-## Current Status
+**2. Run the API**
 
-The internship module is functional and tested. The next planned step is to add JPA relationships with students, mentors, and tasks.
+```bash
+./mvnw spring-boot:run
+```
+
+The API starts at `http://localhost:8080`.
+
+> On Windows, use `mvnw.cmd spring-boot:run` instead.
+
+## Running Tests
+
+```bash
+./mvnw test
+```
+
+Tests run against an embedded H2 database — no external dependencies needed.
+
+> On Windows: `mvnw.cmd test`. Make sure `JAVA_HOME` points to a JDK 21 installation.
+
+## Roadmap
+
+- [ ] Authentication & role-based access control
+- [ ] Stable paginated response DTO
+- [ ] API documentation (OpenAPI / Swagger)

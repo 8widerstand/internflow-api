@@ -79,6 +79,15 @@ public class InternshipController {
                 .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    @PatchMapping("/internships/{internshipId}/mentor/{mentorId}")
+    public ResponseEntity<InternshipResponse> assignMentorToInternship(
+            @PathVariable Long internshipId,
+            @PathVariable Long mentorId) {
+        return this.internshipService.assignMentorToInternship(internshipId, mentorId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
 
     @DeleteMapping("/internships/{id}")
     public ResponseEntity<Void> deleteInternship(@PathVariable Long id) {

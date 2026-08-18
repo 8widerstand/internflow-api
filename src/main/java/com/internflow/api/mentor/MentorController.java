@@ -1,6 +1,5 @@
 package com.internflow.api.mentor;
 
-import com.internflow.api.internship.InternshipResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -36,13 +35,4 @@ public class MentorController {
         return ResponseEntity.created(location).body(createdMentor);
     }
 
-    @PatchMapping("/internships/{internshipId}/mentor/{mentorId}")
-    public ResponseEntity<InternshipResponse> assignMentorToInternship(
-            @PathVariable Long internshipId,
-            @PathVariable Long mentorId)
-    {
-        return this.mentorService.assignMentorToInternship(internshipId, mentorId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
 }

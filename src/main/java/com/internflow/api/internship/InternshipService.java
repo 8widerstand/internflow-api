@@ -1,6 +1,7 @@
 package com.internflow.api.internship;
 
 import com.internflow.api.mentor.Mentor;
+import com.internflow.api.mentor.MentorRepository;
 import com.internflow.api.student.Student;
 import com.internflow.api.student.StudentRepository;
 import org.springframework.data.domain.Page;
@@ -11,11 +12,12 @@ import java.util.Optional;
 
 @Service
 public class InternshipService {
-
+    private final MentorRepository mentorRepository;
     private final InternshipRepository internshipRepository;
     private final StudentRepository studentRepository;
 
-    public InternshipService(InternshipRepository internshipRepository, StudentRepository studentRepository) {
+    public InternshipService(MentorRepository mentorRepository, InternshipRepository internshipRepository, StudentRepository studentRepository) {
+        this.mentorRepository = mentorRepository;
         this.internshipRepository = internshipRepository;
         this.studentRepository = studentRepository;
     }
@@ -100,6 +102,17 @@ public class InternshipService {
         return true;
     }
 
+    public Optional<InternshipResponse> assignMentorToInternship(Long internshipId, Long mentorId) {
+        Internship internship = internshipRepository.findById(internshipId).orElse(null);
+        if (internship == null) return Optional.empty();
+
+        Mentor mentor = mentorRepository.findById(mentorId).orElse(null);
+        if (mentor == null) return Optional.empty();
+
+        internship.assignMentor(mentor);
+        Internship savedInternship = internshipRepository.save(internship);
+        return Optional.of(toInternshipResponse(savedInternship));
+    }
 
     public InternshipResponse toInternshipResponse(Internship internship) {
         Student student = internship.getStudent();
@@ -107,8 +120,8 @@ public class InternshipService {
         Long mentorId = null;
         Long studentId = null;
 
-        if (student != null) {studentId = student.getId();}
-        if (mentor != null) {mentorId = mentor.getId();}
+        if (student != null) studentId = student.getId();
+        if (mentor != null) mentorId = mentor.getId();
 
         return new InternshipResponse(
                 internship.getId(),

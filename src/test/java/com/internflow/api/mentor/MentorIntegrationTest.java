@@ -51,8 +51,15 @@ public class MentorIntegrationTest {
 
     @Test
     void getAllMentorsShouldReturnMentors() throws Exception {
+        String requestBody = mentorRequestJson("Ada", "Bienvenue", "ada@example.com");
+        mentorResponseBody(requestBody);
+
         mockMvc.perform(get("/mentors").contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk());
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].firstName").value("Ada"))
+                .andExpect(jsonPath("$[0].lastName").value("Bienvenue"))
+                .andExpect(jsonPath("$[0].email").value("ada@example.com"));
     }
 
     @Test
@@ -81,8 +88,7 @@ public class MentorIntegrationTest {
         MentorResponse createdMentor = objectMapper.readValue(mentorResponse, MentorResponse.class);
 
         mockMvc.perform(patch("/internships/1/mentor/" + createdMentor.id())).
-                andExpect(status().isNotFound())
-                .andExpect(status().isNotFound());
+                andExpect(status().isNotFound());
     }
 
     @Test
