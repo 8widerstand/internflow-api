@@ -2,7 +2,12 @@ package com.internflow.api.internship;
 
 import com.internflow.api.mentor.Mentor;
 import com.internflow.api.student.Student;
+import com.internflow.api.task.Task;
 import jakarta.persistence.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "internships")
@@ -25,6 +30,9 @@ public class Internship {
     @ManyToOne
     @JoinColumn(name = "mentor_id")
     Mentor mentor;
+
+    @OneToMany(mappedBy = "internship", fetch = FetchType.LAZY)
+    private List<Task> tasks = new ArrayList<>();
 
     protected Internship() {
     }
@@ -78,5 +86,14 @@ public class Internship {
 
     public Mentor getMentor() {
         return mentor;
+    }
+
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
+    public void addTask(Task task) {
+        tasks.add(task);
+        task.assignInternship(this);
     }
 }
