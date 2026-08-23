@@ -1,7 +1,9 @@
 package com.internflow.api.task;
 
+import com.internflow.api.internship.Internship;
 import com.internflow.api.internship.InternshipRepository;
 import com.internflow.api.internship.InternshipResponse;
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +12,10 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -31,10 +35,38 @@ public class TasksIntegrationTest {
     @Autowired
     private TaskRepository taskRepository;
 
+    @Autowired
+    private EntityManager entityManager;
+
     @BeforeEach
     void cleanDatabase() {
         taskRepository.deleteAll();
         internshipRepository.deleteAll();
+    }
+
+    @Test
+    @Transactional
+    void internshipShouldExposePersistedTasks() {
+        Internship internship =
+                new Internship("Java Internship", "BMW", 6);
+
+        internshipRepository.save(internship);
+
+        Task task =
+                new Task("Write tests", "Test the inverse relationship");
+
+        internship.addTask(task);
+        taskRepository.save(task);
+
+        entityManager.flush(); // Forces Hibernate to send pending SQL operations to H2.
+        entityManager.clear(); // Removes the objects from the hibernate context.
+
+        Internship reloadedInternship = internshipRepository
+                .findById(internship.getId())
+                .orElseThrow();
+
+        assertEquals(1, reloadedInternship.getTasks().size());
+        assertEquals("Write tests", reloadedInternship.getTasks().get(0).getTitle());
     }
 
     @Test
@@ -72,14 +104,28 @@ public class TasksIntegrationTest {
 
     @Test
     void getTasksShouldReturnTasksToTheirInternship() throws Exception {
+        String taskRequestBody = """
+                {
+                  "title": "Write tests",
+                  "description": "Test the inverse relationship"
+                }
+                """;
+
         String requestBody1 = internshipRequestJson("Open Internship", "BMW", 6);
         String responseBody1 = internshipResponseBody(requestBody1);
 
         InternshipResponse created = objectMapper.readValue(responseBody1, InternshipResponse.class);
 
+        mockMvc.perform(post("/internships/" + created.id() + "/tasks").contentType(MediaType.APPLICATION_JSON)
+                        .content(taskRequestBody))
+                        .andExpect(status().isCreated());
+
+
         mockMvc.perform(get("/internships/" + created.id() + "/tasks").contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.length()").value(0));
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].title").value("Write tests"))
+                .andExpect(jsonPath("$[0].internshipId").value(created.id()));
     }
 
     @Test
@@ -98,10 +144,10 @@ public class TasksIntegrationTest {
                 """;
 
         String updatedBody = """
-                            {
-                                "completed": true
-                            }
-                            """;
+                {
+                    "completed": true
+                }
+                """;
 
         String responseBody1 = taskResponseBody(requestBody);
 
@@ -115,10 +161,10 @@ public class TasksIntegrationTest {
     @Test
     void updateTaskCompletedShouldReturnNotFoundWhenTaskIsNotFound() throws Exception {
         String updatedBody = """
-                            {
-                                "completed": true
-                            }
-                            """;
+                {
+                    "completed": true
+                }
+                """;
 
         mockMvc.perform(patch("/tasks/99/completed").contentType(MediaType.APPLICATION_JSON).content(updatedBody))
                 .andExpect(status().isNotFound())
@@ -140,8 +186,8 @@ public class TasksIntegrationTest {
 
         return mockMvc.perform(post("/internships/" + created.id() + "/tasks")
                         .contentType(MediaType.APPLICATION_JSON).content(requestBody))
-                        .andExpect(status().isCreated())
-                        .andReturn().getResponse().getContentAsString();
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
 
     }
 

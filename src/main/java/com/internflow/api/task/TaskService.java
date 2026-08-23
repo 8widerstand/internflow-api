@@ -4,6 +4,7 @@ import com.internflow.api.common.error.ResourceNotFoundException;
 import com.internflow.api.internship.Internship;
 import com.internflow.api.internship.InternshipRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,17 +19,24 @@ public class TaskService {
         this.internshipRepository = internshipRepository;
     }
 
+    /**
+     * Keeps the persistence context open while the lazy tasks collection is read.
+     * Calling getTasks() returns the lazy collection, while stream() triggers its
+     * loading from the database before the tasks are mapped to DTOs.
+     */
+    @Transactional(readOnly = true)
     public Optional<List<TaskResponse>> findInternshipTasks(Long internshipId) {
         Internship internship = internshipRepository.findById(internshipId).orElse(null);
         if (internship == null) {
             return Optional.empty();
         }
 
-        List<Task> tasks = tasksRepository.findByInternship(internship);
+        List<Task> tasks = internship.getTasks();
         List<TaskResponse> taskResponses = tasks.stream().map(this::toTasksResponse).toList();
         return Optional.of(taskResponses);
     }
 
+    @Transactional
     public Optional<TaskResponse> createTask(CreateTaskRequest task, Long internshipId) {
         Task newTask = new Task(
                 task.title(),
@@ -38,7 +46,7 @@ public class TaskService {
         if (internship == null) {
             return Optional.empty();
         }
-        newTask.assignInternship(internship);
+        internship.addTask(newTask);
         Task savedTask = tasksRepository.save(newTask);
         return Optional.of(toTasksResponse(savedTask));
     }
