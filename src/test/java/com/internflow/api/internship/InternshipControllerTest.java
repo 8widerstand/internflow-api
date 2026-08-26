@@ -50,7 +50,10 @@ public class InternshipControllerTest {
     void getInternshipByIdShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
         when(internshipService.findInternshipById(1L))
                 .thenThrow(new ResourceNotFoundException("Internship not found with id: 1"));
-        mockMvc.perform(get("/internships/1")).andExpect(status().isNotFound());
+        mockMvc.perform(get("/internships/1"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").value("Internship not found with id: 1"));
     }
 
     @Test
@@ -299,6 +302,7 @@ public class InternshipControllerTest {
         String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
         when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(empty());
         mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(content().string(""))
                 .andExpect(status().isNotFound());
     }
 
