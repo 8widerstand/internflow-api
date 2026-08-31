@@ -14,11 +14,8 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.Optional.empty;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-import static org.springframework.data.jpa.domain.AbstractPersistable_.id;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -252,7 +249,7 @@ public class InternshipControllerTest {
         String requestBody = statusRequestJson(InternshipStatus.COMPLETED);
 
         when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED))
-                .thenReturn(Optional.of(response));
+                .thenReturn(response);
 
         mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isOk())
@@ -264,9 +261,17 @@ public class InternshipControllerTest {
     void updateInternshipStatusShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
         String requestBody = statusRequestJson(InternshipStatus.COMPLETED);
 
-        when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED)).thenReturn(empty());
-        mockMvc.perform(patch("/internships/1/status").contentType(MediaType.APPLICATION_JSON).content(requestBody))
-                .andExpect(status().isNotFound());
+        when(internshipService.updateStatus(1L, InternshipStatus.COMPLETED))
+                .thenThrow(new ResourceNotFoundException("Internship not found with id: 1"));
+
+        mockMvc.perform(patch("/internships/1/status")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(requestBody))
+                        .andExpect(status().isNotFound())
+                        .andExpect(jsonPath("$.message")
+                        .value("Resource not found"))
+                        .andExpect(jsonPath("$.errors.resource")
+                        .value("Internship not found with id: 1"));
     }
 
     @Test
@@ -288,7 +293,9 @@ public class InternshipControllerTest {
     void updateInternshipShouldReturnOkWhenInternshipExists() throws Exception {
         InternshipResponse response = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
-        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(Optional.of(response));
+        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class)))
+                .thenReturn(response);
+
         mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.title").value("Java Internship"))
@@ -300,10 +307,15 @@ public class InternshipControllerTest {
     @Test
     void updateInternshipShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
         String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
-        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class))).thenReturn(empty());
+        when(internshipService.update(eq(1L), any(CreateInternshipRequest.class)))
+                .thenThrow(new ResourceNotFoundException("Internship not found with id: 1"));
+
         mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
-                .andExpect(content().string(""))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                .value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource")
+                .value("Internship not found with id: 1"));
     }
 
     @Test

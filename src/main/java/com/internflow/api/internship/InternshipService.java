@@ -60,15 +60,13 @@ public class InternshipService {
 
     }
 
-    public Optional<InternshipResponse> update(Long id, CreateInternshipRequest request) {
-        Optional<Internship> internshipOptional = internshipRepository.findById(id);
-        if (internshipOptional.isEmpty()) {
-            return Optional.empty();
-        }
-        Internship internship = internshipOptional.get();
+    public InternshipResponse update(Long id, CreateInternshipRequest request) {
+        Internship internship = internshipRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Internship not found with id: " + id));
+
         internship.update(request.title(), request.company(), request.durationInMonths());
         Internship savedInternship = internshipRepository.save(internship);
-        return Optional.of(toInternshipResponse(savedInternship));
+        return toInternshipResponse(savedInternship);
     }
 
     public Optional<InternshipResponse> assignInternship(Long internshipId, Long studentId) {
@@ -84,15 +82,13 @@ public class InternshipService {
         return Optional.of(toInternshipResponse(savedInternship));
     }
 
-    public Optional<InternshipResponse> updateStatus(Long id, InternshipStatus status) {
-        Optional<Internship> internshipOptional = internshipRepository.findById(id);
-        if (internshipOptional.isEmpty()) {
-            return Optional.empty();
-        }
-        Internship internship = internshipOptional.get();
+    public InternshipResponse updateStatus(Long id, InternshipStatus status) {
+        Internship internship = internshipRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Internship not found with id: " + id));
+
         internship.updateStatus(status);
         Internship savedInternship = internshipRepository.save(internship);
-        return Optional.of(toInternshipResponse(savedInternship));
+        return toInternshipResponse(savedInternship);
     }
 
     public void delete(Long id) {

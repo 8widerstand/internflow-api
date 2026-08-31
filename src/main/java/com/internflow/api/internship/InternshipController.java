@@ -50,21 +50,19 @@ public class InternshipController {
     }
 
     @PutMapping("/internships/{id}")
-    public ResponseEntity<InternshipResponse> updateInternship(
+    public InternshipResponse updateInternship(
             @PathVariable Long id,
             @Valid @RequestBody CreateInternshipRequest createInternshipRequest
     ) {
-        return internshipService.update(id, createInternshipRequest)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return internshipService.update(id, createInternshipRequest);
     }
 
     @PatchMapping("/internships/{id}/status")
-    public ResponseEntity<InternshipResponse> updateInternshipStatus(
+    public InternshipResponse updateInternshipStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateInternshipStatusRequest updateStatusRequest
     ) {
-        return internshipService.updateStatus(id, updateStatusRequest.status())
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return internshipService.updateStatus(id, updateStatusRequest.status());
     }
 
     //Assign a student to a specific internship
