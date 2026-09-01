@@ -1,6 +1,7 @@
 package com.internflow.api.internship;
 
 import com.internflow.api.common.error.ResourceNotFoundException;
+import com.internflow.api.student.StudentRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -20,36 +21,13 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class InternshipServiceTest {
     @Mock
+    private StudentRepository studentRepository;
+
+    @Mock
     private InternshipRepository internshipRepository;
 
     @InjectMocks
     private InternshipService internshipService;
-
-
-    @Test
-    void findInternshipByIdShouldThrowWhenInternshipDoesNotExist() {
-        when(internshipRepository.findById(1L)).thenReturn(Optional.empty());
-
-        ResourceNotFoundException exception = assertThrows(
-                ResourceNotFoundException.class,
-                () -> internshipService.findInternshipById(1L)
-        );
-
-        assertEquals("Internship not found with id: 1", exception.getMessage());
-    }
-
-    @Test
-    void findInternshipByIdShouldReturnInternshipWhenInternshipExists() {
-        Internship internship = new Internship("Java Internship", "BMW", 6);
-        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
-
-        InternshipResponse response = internshipService.findInternshipById(1L);
-
-        assertEquals(internship.getTitle(), response.title());
-        assertEquals(internship.getCompany(), response.company());
-        assertEquals(internship.getDurationInMonths(), response.durationInMonths());
-        assertEquals(internship.getStatus(), response.status());
-    }
 
     @Test
     void updateStatusShouldReturnUpdatedInternshipWhenInternshipExists() {
@@ -93,7 +71,7 @@ public class InternshipServiceTest {
     }
 
     @Test
-    void updateShouldThrowWhenInternshipDoesNotExist(){
+    void updateShouldThrowWhenInternshipDoesNotExist() {
         CreateInternshipRequest request = new CreateInternshipRequest("Backend Internship", "Siemens", 8);
         when(internshipRepository.findById(1L)).thenReturn(Optional.empty());
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> internshipService.update(1L, request));
@@ -115,6 +93,31 @@ public class InternshipServiceTest {
         assertEquals(InternshipStatus.OPEN, internshipResponse.status());
 
         verify(internshipRepository).save(any(Internship.class));
+    }
+
+    @Test
+    void findInternshipByIdShouldThrowWhenInternshipDoesNotExist() {
+        when(internshipRepository.findById(1L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                () -> internshipService.findInternshipById(1L)
+        );
+
+        assertEquals("Internship not found with id: 1", exception.getMessage());
+    }
+
+    @Test
+    void findInternshipByIdShouldReturnInternshipWhenInternshipExists() {
+        Internship internship = new Internship("Java Internship", "BMW", 6);
+        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+
+        InternshipResponse response = internshipService.findInternshipById(1L);
+
+        assertEquals(internship.getTitle(), response.title());
+        assertEquals(internship.getCompany(), response.company());
+        assertEquals(internship.getDurationInMonths(), response.durationInMonths());
+        assertEquals(internship.getStatus(), response.status());
     }
 
     @Test
@@ -200,5 +203,29 @@ public class InternshipServiceTest {
 
         assertEquals("Internship not found with id: 1", exception.getMessage());
         verify(internshipRepository, never()).deleteById(anyLong());
+    }
+
+    @Test
+    void assignStudentShouldThrowWhenInternshipDoesNotExist() {
+        when(internshipRepository.findById(1L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> internshipService.assignInternship(1L, 2L));
+        assertEquals("Internship not found with id: 1", exception.getMessage());
+        verify(studentRepository, never()).findById(anyLong());
+        verify(internshipRepository, never()).save(any(Internship.class));
+    }
+
+    @Test
+    void assignStudentShouldThrowWhenStudentDoesNotExist() {
+        Internship internship = new Internship("Java Internship", "BMW", 6);
+
+        when(internshipRepository.findById(1L)).thenReturn(Optional.of(internship));
+        when(studentRepository.findById(2L)).thenReturn(Optional.empty());
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class,
+                () -> internshipService.assignInternship(1L, 2L));
+
+        assertEquals("Student not found with id: 2", exception.getMessage());
+        verify(internshipRepository, never()).save(any(Internship.class));
     }
 }

@@ -69,17 +69,15 @@ public class InternshipService {
         return toInternshipResponse(savedInternship);
     }
 
-    public Optional<InternshipResponse> assignInternship(Long internshipId, Long studentId) {
-        Optional<Internship> internshipOptional = internshipRepository.findById(internshipId);
-        Optional<Student> studentOptional = studentRepository.findById(studentId);
-        if (internshipOptional.isEmpty() || studentOptional.isEmpty()) {
-            return Optional.empty();
-        }
-        Internship internship = internshipOptional.get();
-        Student student = studentOptional.get();
+    public InternshipResponse assignInternship(Long internshipId, Long studentId) {
+        Internship internship = internshipRepository.findById(internshipId)
+                .orElseThrow(() -> new ResourceNotFoundException("Internship not found with id: " + internshipId));
+        Student student = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + studentId));
+
         internship.assignStudent(student);
         Internship savedInternship = internshipRepository.save(internship);
-        return Optional.of(toInternshipResponse(savedInternship));
+        return toInternshipResponse(savedInternship);
     }
 
     public InternshipResponse updateStatus(Long id, InternshipStatus status) {

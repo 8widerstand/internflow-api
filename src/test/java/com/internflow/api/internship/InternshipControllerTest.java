@@ -1,7 +1,6 @@
 package com.internflow.api.internship;
 
 import com.internflow.api.common.error.ResourceNotFoundException;
-import com.internflow.api.mentor.MentorResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
@@ -11,9 +10,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
-import java.util.Optional;
 
-import static java.util.Optional.empty;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -21,6 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(InternshipController.class)
 public class InternshipControllerTest {
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -267,10 +265,10 @@ public class InternshipControllerTest {
         mockMvc.perform(patch("/internships/1/status")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
-                        .andExpect(status().isNotFound())
-                        .andExpect(jsonPath("$.message")
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
                         .value("Resource not found"))
-                        .andExpect(jsonPath("$.errors.resource")
+                .andExpect(jsonPath("$.errors.resource")
                         .value("Internship not found with id: 1"));
     }
 
@@ -313,9 +311,9 @@ public class InternshipControllerTest {
         mockMvc.perform(put("/internships/1").contentType(MediaType.APPLICATION_JSON).content(requestBody))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message")
-                .value("Resource not found"))
+                        .value("Resource not found"))
                 .andExpect(jsonPath("$.errors.resource")
-                .value("Internship not found with id: 1"));
+                        .value("Internship not found with id: 1"));
     }
 
     @Test
@@ -344,6 +342,33 @@ public class InternshipControllerTest {
                 .andExpect(status().isNoContent());
 
         verify(internshipService).delete(1L);
+    }
+
+    @Test
+    void assignStudentShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
+        when(internshipService.assignInternship(1L, 2L))
+                .thenThrow(new ResourceNotFoundException("Internship not found with id: 1"));
+
+        mockMvc.perform(patch("/internships/1/student/2"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                .value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource")
+                .value("Internship not found with id: 1"));
+    }
+
+    @Test
+    void assignStudentShouldReturnNotFoundWhenStudentDoesNotExist() throws Exception {
+
+        when(internshipService.assignInternship(1L, 2L))
+                .thenThrow(new ResourceNotFoundException("Student not found with id: 2"));
+
+        mockMvc.perform(patch("/internships/1/student/2"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message")
+                .value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource")
+                .value("Student not found with id: 2"));
     }
 
     private InternshipResponse internshipResponse(
