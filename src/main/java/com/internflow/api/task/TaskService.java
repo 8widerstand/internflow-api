@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class TaskService {
@@ -25,30 +24,24 @@ public class TaskService {
      * loading from the database before the tasks are mapped to DTOs.
      */
     @Transactional(readOnly = true)
-    public Optional<List<TaskResponse>> findInternshipTasks(Long internshipId) {
-        Internship internship = internshipRepository.findById(internshipId).orElse(null);
-        if (internship == null) {
-            return Optional.empty();
-        }
+    public List<TaskResponse> findInternshipTasks(Long internshipId) {
+        Internship internship = internshipRepository.findById(internshipId)
+                .orElseThrow(() -> new ResourceNotFoundException("Internship not found with id: " + internshipId));
 
         List<Task> tasks = internship.getTasks();
         List<TaskResponse> taskResponses = tasks.stream().map(this::toTasksResponse).toList();
-        return Optional.of(taskResponses);
+        return taskResponses;
     }
 
     @Transactional
-    public Optional<TaskResponse> createTask(CreateTaskRequest task, Long internshipId) {
-        Task newTask = new Task(
-                task.title(),
-                task.description()
-        );
-        Internship internship = internshipRepository.findById(internshipId).orElse(null);
-        if (internship == null) {
-            return Optional.empty();
-        }
+    public TaskResponse createTask(CreateTaskRequest task, Long internshipId) {
+        Task newTask = new Task(task.title(), task.description());
+        Internship internship = internshipRepository.findById(internshipId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                        "Internship not found with id: " + internshipId));
         internship.addTask(newTask);
         Task savedTask = tasksRepository.save(newTask);
-        return Optional.of(toTasksResponse(savedTask));
+        return toTasksResponse(savedTask);
     }
 
     public TaskResponse updateCompletedTask(Long taskId, UpdateTaskCompletedRequest request) {

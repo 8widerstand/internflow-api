@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 public class TaskController {
@@ -21,20 +20,15 @@ public class TaskController {
             @Valid @PathVariable Long internshipId,
             @Valid @RequestBody CreateTaskRequest request
     ) {
-        Optional<TaskResponse> task = this.service.createTask(request, internshipId);
-        if (task.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        TaskResponse task = this.service.createTask(request, internshipId);
         URI location = URI.create("/internships/" + internshipId + "/tasks");
 
-        return ResponseEntity.created(location).body(task.get());
+        return ResponseEntity.created(location).body(task);
     }
 
     @GetMapping("/internships/{internshipId}/tasks")
-    ResponseEntity<List<TaskResponse>> findInternshipTasks(@PathVariable Long internshipId) {
-        return service.findInternshipTasks(internshipId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    List<TaskResponse> findInternshipTasks(@PathVariable Long internshipId) {
+        return service.findInternshipTasks(internshipId);
     }
 
     @PatchMapping("/tasks/{taskId}/completed")

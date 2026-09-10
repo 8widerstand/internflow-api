@@ -75,12 +75,10 @@ public class InternshipController {
     }
 
     @PatchMapping("/internships/{internshipId}/mentor/{mentorId}")
-    public ResponseEntity<InternshipResponse> assignMentorToInternship(
+    public InternshipResponse assignMentorToInternship(
             @PathVariable Long internshipId,
             @PathVariable Long mentorId) {
-        return this.internshipService.assignMentorToInternship(internshipId, mentorId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return this.internshipService.assignMentorToInternship(internshipId, mentorId);
     }
 
 

@@ -352,9 +352,9 @@ public class InternshipControllerTest {
         mockMvc.perform(patch("/internships/1/student/2"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message")
-                .value("Resource not found"))
+                        .value("Resource not found"))
                 .andExpect(jsonPath("$.errors.resource")
-                .value("Internship not found with id: 1"));
+                        .value("Internship not found with id: 1"));
     }
 
     @Test
@@ -365,10 +365,31 @@ public class InternshipControllerTest {
 
         mockMvc.perform(patch("/internships/1/student/2"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.message")
-                .value("Resource not found"))
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").value("Student not found with id: 2"));
+    }
+
+    @Test
+    void assignMentorShouldReturnNotFoundWhenMentorDoesNotExist() throws Exception {
+        when(internshipService.assignMentorToInternship(1L, 2L))
+                .thenThrow(new ResourceNotFoundException("Mentor not found with id: 2"));
+
+        mockMvc.perform(patch("/internships/1/mentor/2"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
                 .andExpect(jsonPath("$.errors.resource")
-                .value("Student not found with id: 2"));
+                        .value("Mentor not found with id: 2"));
+    }
+
+    @Test
+    void assignMentorShouldReturnNotFoundWhenInternshipDoesNotExist() throws Exception {
+        when(internshipService.assignMentorToInternship(1L, 2L))
+                .thenThrow(new ResourceNotFoundException("Internship not found with id: 1"));
+
+        mockMvc.perform(patch("/internships/1/mentor/2"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").value("Internship not found with id: 1"));
     }
 
     private InternshipResponse internshipResponse(

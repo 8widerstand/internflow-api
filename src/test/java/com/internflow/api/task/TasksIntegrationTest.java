@@ -99,7 +99,9 @@ public class TasksIntegrationTest {
                 """;
 
         mockMvc.perform(post("/internships/99/tasks").contentType(MediaType.APPLICATION_JSON).content(requestBody))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").value("Internship not found with id: 99"));
     }
 
     @Test
@@ -118,7 +120,7 @@ public class TasksIntegrationTest {
 
         mockMvc.perform(post("/internships/" + created.id() + "/tasks").contentType(MediaType.APPLICATION_JSON)
                         .content(taskRequestBody))
-                        .andExpect(status().isCreated());
+                .andExpect(status().isCreated());
 
 
         mockMvc.perform(get("/internships/" + created.id() + "/tasks").contentType(MediaType.APPLICATION_JSON))
@@ -131,7 +133,9 @@ public class TasksIntegrationTest {
     @Test
     void getTasksShouldReturnNotFoundWhenInternshipIsNotFound() throws Exception {
         mockMvc.perform(get("/internships/99/tasks"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Resource not found"))
+                .andExpect(jsonPath("$.errors.resource").value("Internship not found with id: 99"));
     }
 
     @Test
