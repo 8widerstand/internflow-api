@@ -35,10 +35,8 @@ public class InternshipController {
     }
 
     @GetMapping("/internships/{id}")
-    public ResponseEntity<InternshipResponse> getInternshipById(@PathVariable Long id) {
-        return internshipService.findInternshipById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public InternshipResponse getInternshipById(@PathVariable Long id) {
+        return internshipService.findInternshipById(id);
     }
 
     @PostMapping("/internships")
@@ -52,29 +50,42 @@ public class InternshipController {
     }
 
     @PutMapping("/internships/{id}")
-    public ResponseEntity<InternshipResponse> updateInternship(
+    public InternshipResponse updateInternship(
             @PathVariable Long id,
             @Valid @RequestBody CreateInternshipRequest createInternshipRequest
     ) {
-        return internshipService.update(id, createInternshipRequest)
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return internshipService.update(id, createInternshipRequest);
     }
 
     @PatchMapping("/internships/{id}/status")
-    public ResponseEntity<InternshipResponse> updateInternshipStatus(
+    public InternshipResponse updateInternshipStatus(
             @PathVariable Long id,
             @Valid @RequestBody UpdateInternshipStatusRequest updateStatusRequest
     ) {
-        return internshipService.updateStatus(id, updateStatusRequest.status())
-                .map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
+        return internshipService.updateStatus(id, updateStatusRequest.status());
     }
+
+    //Assign a student to a specific internship
+    @PatchMapping("/internships/{internshipId}/student/{studentId}")
+    public InternshipResponse assignStudentToInternship(
+            @PathVariable Long internshipId,
+            @PathVariable Long studentId
+    ) {
+        return internshipService.assignInternship(internshipId, studentId);
+    }
+
+    @PatchMapping("/internships/{internshipId}/mentor/{mentorId}")
+    public InternshipResponse assignMentorToInternship(
+            @PathVariable Long internshipId,
+            @PathVariable Long mentorId) {
+        return this.internshipService.assignMentorToInternship(internshipId, mentorId);
+    }
+
 
     @DeleteMapping("/internships/{id}")
     public ResponseEntity<Void> deleteInternship(@PathVariable Long id) {
-        if (internshipService.delete(id)) {
-            return ResponseEntity.noContent().build();
-        }
-        return ResponseEntity.notFound().build();
+        internshipService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 
     private String normalizeCompany(String company) {
