@@ -1,10 +1,12 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.common.error.ResourceConflictException;
 import com.internflow.api.common.error.ResourceNotFoundException;
 import com.internflow.api.mentor.Mentor;
 import com.internflow.api.mentor.MentorRepository;
 import com.internflow.api.student.Student;
 import com.internflow.api.student.StudentRepository;
+import com.internflow.api.task.TaskRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -14,11 +16,15 @@ public class InternshipService {
     private final MentorRepository mentorRepository;
     private final InternshipRepository internshipRepository;
     private final StudentRepository studentRepository;
+    private final TaskRepository taskRepository;
 
-    public InternshipService(MentorRepository mentorRepository, InternshipRepository internshipRepository, StudentRepository studentRepository) {
+    public InternshipService(MentorRepository mentorRepository, InternshipRepository internshipRepository,
+                             StudentRepository studentRepository, TaskRepository taskRepository)
+    {
         this.mentorRepository = mentorRepository;
         this.internshipRepository = internshipRepository;
         this.studentRepository = studentRepository;
+        this.taskRepository = taskRepository;
     }
 
     public Page<InternshipResponse> findAllInternships(
@@ -89,8 +95,17 @@ public class InternshipService {
 
     public void delete(Long id) {
         if (!internshipRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Internship not found with id: " + id);
+            throw new ResourceNotFoundException(
+                    "Internship not found with id: " + id
+            );
         }
+
+        if (taskRepository.existsByInternshipId(id)) {
+            throw new ResourceConflictException(
+                    "Internship cannot be deleted while tasks exist"
+            );
+        }
+
         internshipRepository.deleteById(id);
     }
 

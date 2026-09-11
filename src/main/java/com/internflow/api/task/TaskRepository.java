@@ -3,4 +3,5 @@ package com.internflow.api.task;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface TaskRepository extends JpaRepository<Task, Long> {
+    boolean existsByInternshipId(Long internshipId);
 }

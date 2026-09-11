@@ -1,8 +1,10 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.common.error.ResourceConflictException;
 import com.internflow.api.common.error.ResourceNotFoundException;
 import com.internflow.api.mentor.MentorRepository;
 import com.internflow.api.student.StudentRepository;
+import com.internflow.api.task.TaskRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -30,6 +32,9 @@ public class InternshipServiceTest {
 
     @Mock
     private InternshipRepository internshipRepository;
+
+    @Mock
+    private TaskRepository taskRepository;
 
     @InjectMocks
     private InternshipService internshipService;
@@ -191,9 +196,10 @@ public class InternshipServiceTest {
     @Test
     void deleteShouldDeleteInternshipWhenInternshipExists() {
         when(internshipRepository.existsById(1L)).thenReturn(true);
+        when(taskRepository.existsByInternshipId(1L)).thenReturn(false);
 
         internshipService.delete(1L);
-
+        verify(taskRepository).existsByInternshipId(1L);
         verify(internshipRepository).deleteById(1L);
     }
 
@@ -207,6 +213,20 @@ public class InternshipServiceTest {
         );
 
         assertEquals("Internship not found with id: 1", exception.getMessage());
+        verify(internshipRepository, never()).deleteById(anyLong());
+        verify(taskRepository, never()).existsByInternshipId(anyLong());
+    }
+
+    @Test
+    void deleteShouldThrowConflictWhenInternshipHasTasks(){
+        when(internshipRepository.existsById(1L)).thenReturn(true);
+        when(taskRepository.existsByInternshipId(1L)).thenReturn(true);
+        ResourceConflictException exception = assertThrows(
+                ResourceConflictException.class,
+                () -> internshipService.delete(1L)
+        );
+        assertEquals("Internship cannot be deleted while tasks exist", exception.getMessage());
+        verify(taskRepository).existsByInternshipId(1L);
         verify(internshipRepository, never()).deleteById(anyLong());
     }
 

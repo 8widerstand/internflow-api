@@ -3,6 +3,7 @@ package com.internflow.api.internship;
 import com.internflow.api.mentor.MentorResponse;
 import com.internflow.api.student.StudentRepository;
 import com.internflow.api.student.StudentResponse;
+import com.internflow.api.task.TaskRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
 
@@ -36,8 +40,12 @@ class InternshipIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private TaskRepository taskRepository;
+
     @BeforeEach
     void cleanDatabase() {
+        taskRepository.deleteAll();
         internshipRepository.deleteAll();
         studentRepository.deleteAll();
     }
@@ -301,6 +309,41 @@ class InternshipIntegrationTest {
                 .andExpect(jsonPath("$.mentorId").value(createdMentor.id()));
     }
 
+    @Test
+    void deleteInternshipShouldReturnNoContentWhenNoTasksExist() throws Exception {
+        String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
+        String responseBody = internshipResponseBody(requestBody);
+
+        InternshipResponse createdInternship = objectMapper.readValue(responseBody, InternshipResponse.class);
+
+        mockMvc.perform(delete("/internships/" + createdInternship.id()))
+                .andExpect(status().isNoContent());
+
+        assertFalse(internshipRepository.existsById(createdInternship.id()));
+    }
+
+    @Test
+    void deleteInternshipShouldReturnConflictWhenTasksExist() throws Exception {
+        String requestBody = internshipRequestJson("Java Internship", "BMW", 6);
+        String responseBody = internshipResponseBody(requestBody);
+        String taskRequestBody = taskRequestJson("Write tests", "Protect internship deletion");
+        InternshipResponse createdInternship = objectMapper.readValue(responseBody, InternshipResponse.class);
+
+        mockMvc.perform(post("/internships/" + createdInternship.id() + "/tasks")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(taskRequestBody))
+                .andExpect(status().isCreated());
+
+        mockMvc.perform(delete("/internships/" + createdInternship.id()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.message").value("Resource conflict"))
+                .andExpect(jsonPath("$.errors.resource")
+                        .value("Internship cannot be deleted while tasks exist"));
+
+        assertTrue(internshipRepository.existsById(createdInternship.id()));
+        assertTrue(taskRepository.existsByInternshipId(createdInternship.id()));
+    }
+
     private String mentorRequestJson(
             String firstName,
             String lastName,
@@ -361,5 +404,17 @@ class InternshipIntegrationTest {
                             "birthDate": "%s"
                         }
                 """.formatted(firstName, lastName, university, birthDate);
+    }
+
+    private String taskRequestJson(
+            String title,
+            String description
+    ) {
+        return """
+                {
+                    "title": "%s",
+                    "description": "%s"
+                }
+                """.formatted(title, description);
     }
 }
