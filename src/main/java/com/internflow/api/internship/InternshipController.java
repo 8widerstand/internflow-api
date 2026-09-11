@@ -1,5 +1,6 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.common.pagination.PagedResponse;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +21,7 @@ public class InternshipController {
     }
 
     @GetMapping("/internships")
-    public Page<InternshipResponse> internships(
+    public PagedResponse<InternshipResponse> internships(
             @RequestParam(required = false) InternshipStatus status,
             @RequestParam(required = false) String company,
             @RequestParam(defaultValue = "0") int page,
@@ -31,7 +32,8 @@ public class InternshipController {
         Sort sortValue = parseSort(sort);
         String companyValue = normalizeCompany(company);
         Pageable pageable = PageRequest.of(page, size, sortValue);
-        return internshipService.findAllInternships(status, companyValue, pageable);
+        Page<InternshipResponse> internshipPage = internshipService.findAllInternships(status, companyValue, pageable);
+        return PagedResponse.from(internshipPage);
     }
 
     @GetMapping("/internships/{id}")

@@ -151,12 +151,12 @@ public class InternshipControllerTest {
     void getAllInternshipsShouldUsePageAndSizeParameters() throws Exception {
         InternshipResponse internship1 = internshipResponse(1L, "Java Internship", "BMW", 6, InternshipStatus.OPEN);
         Pageable pageable = PageRequest.of(1, 5, Sort.by(Sort.Direction.ASC, "id"));
-        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 1);
+        Page<InternshipResponse> pageResult = new PageImpl<>(List.of(internship1), pageable, 6);
         when(internshipService.findAllInternships(null, null, pageable)).thenReturn(pageResult);
 
         mockMvc.perform(get("/internships?page=1&size=5")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.size").value(5))
-                .andExpect(jsonPath("$.number").value(1));
+                .andExpect(jsonPath("$.page").value(1));
 
         verify(internshipService).findAllInternships(null, null, pageable);
     }

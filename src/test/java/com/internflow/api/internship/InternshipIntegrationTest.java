@@ -251,9 +251,15 @@ class InternshipIntegrationTest {
 
         mockMvc.perform(get("/internships?page=1&size=2")).andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.length()").value(1))
-                .andExpect(jsonPath("$.number").value(1))
+                .andExpect(jsonPath("$.page").value(1))
                 .andExpect(jsonPath("$.size").value(2))
-                .andExpect(jsonPath("$.totalElements").value(3));
+                .andExpect(jsonPath("$.totalElements").value(3))
+                .andExpect(jsonPath("$.totalPages").value(2))
+                .andExpect(jsonPath("$.first").value(false))
+                .andExpect(jsonPath("$.last").value(true))
+                .andExpect(jsonPath("$.pageable").doesNotExist())
+                .andExpect(jsonPath("$.sort").doesNotExist())
+                .andExpect(jsonPath("$.number").doesNotExist());
     }
 
     @Test
