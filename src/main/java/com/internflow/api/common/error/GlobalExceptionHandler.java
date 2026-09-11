@@ -68,4 +68,13 @@ public class GlobalExceptionHandler {
         ApiErrorResponse response = new ApiErrorResponse("Resource not found", errors);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
+
+    @ExceptionHandler(ResourceConflictException.class)
+    public ResponseEntity<ApiErrorResponse> handleResourceConflictException(
+            ResourceConflictException exception) {
+        Map<String, String> errors = new HashMap<>();
+        errors.put("resource", exception.getMessage());
+        ApiErrorResponse response = new ApiErrorResponse("Resource conflict", errors);
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
 }
