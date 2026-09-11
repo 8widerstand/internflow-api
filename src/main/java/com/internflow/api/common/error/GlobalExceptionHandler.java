@@ -15,27 +15,27 @@ import java.util.Map;
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ValidationErrorResponse> handleValidationError(MethodArgumentNotValidException exception) {
+    public ResponseEntity<ApiErrorResponse> handleValidationError(MethodArgumentNotValidException exception) {
         Map<String, String> errors = new HashMap<>();
 
         exception.getBindingResult().getFieldErrors().forEach(fieldError -> {
             errors.put(fieldError.getField(), fieldError.getDefaultMessage());
         });
 
-        ValidationErrorResponse response = new ValidationErrorResponse("Validation failed", errors);
+        ApiErrorResponse response = new ApiErrorResponse("Validation failed", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ValidationErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
+    public ResponseEntity<ApiErrorResponse> handleHttpMessageNotReadableException(HttpMessageNotReadableException exception) {
         Map<String, String> errors = new HashMap<>();
         errors.put("request", "Request body is malformed or contains invalid values");
-        ValidationErrorResponse response = new ValidationErrorResponse("Invalid request body", errors);
+        ApiErrorResponse response = new ApiErrorResponse("Invalid request body", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
-    public ResponseEntity<ValidationErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
+    public ResponseEntity<ApiErrorResponse> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException exception) {
         Map<String, String> errors = new HashMap<>();
         String parameterName = exception.getName();
         if ("status".equals(parameterName)) {
@@ -43,12 +43,12 @@ public class GlobalExceptionHandler {
         } else {
             errors.put(parameterName, "Invalid request parameter");
         }
-        ValidationErrorResponse response = new ValidationErrorResponse("Invalid request parameter", errors);
+        ApiErrorResponse response = new ApiErrorResponse("Invalid request parameter", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ValidationErrorResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
+    public ResponseEntity<ApiErrorResponse> handleIllegalArgumentException(IllegalArgumentException exception) {
         Map<String, String> errors = new HashMap<>();
         String[] parts = exception.getMessage().split(": ", 2);
         if (parts.length == 2) {
@@ -56,16 +56,16 @@ public class GlobalExceptionHandler {
         } else {
             errors.put("request", exception.getMessage());
         }
-        ValidationErrorResponse response = new ValidationErrorResponse("Invalid request parameter", errors);
+        ApiErrorResponse response = new ApiErrorResponse("Invalid request parameter", errors);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
-    public ResponseEntity<ValidationErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception) {
+    public ResponseEntity<ApiErrorResponse> handleResourceNotFoundException(ResourceNotFoundException exception) {
         Map<String, String> errors = new HashMap<>();
         errors.put("resource", exception.getMessage());
 
-        ValidationErrorResponse response = new ValidationErrorResponse("Resource not found", errors);
+        ApiErrorResponse response = new ApiErrorResponse("Resource not found", errors);
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
     }
 }
