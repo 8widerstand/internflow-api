@@ -1,6 +1,9 @@
 package com.internflow.api.task;
 
+import jakarta.validation.constraints.NotNull;
+
 public record UpdateTaskCompletedRequest(
-        boolean completed
+        @NotNull(message = "Completed is required")
+        Boolean completed
 ) {
 }
