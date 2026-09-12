@@ -91,4 +91,61 @@ public class StudentIntegrationTest {
                 .andExpect(jsonPath("$.birthDate").value("2000-01-01"));
 
     }
+
+    @Test
+    void createStudentShouldReturnBadRequestWhenBirthDateIsInFuture() throws Exception {
+        LocalDate futureBirthDate = LocalDate.now().plusDays(1);
+        long studentCountBefore = studentRepository.count();
+        String requestBody = """
+                {
+                  "firstName": "Magne",
+                  "lastName": "Candace",
+                  "university": "University of Douala",
+                  "birthDate": "%s"
+                 }
+        """.formatted(futureBirthDate);
+
+        mockMvc.perform(post("/students").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.birthDate").value("Birth date cannot be in the future"));
+
+        assertThat(studentRepository.count()).isEqualTo(studentCountBefore);
+    }
+
+    @Test
+    void createStudentShouldAllowMissingBirthDate() throws Exception {
+        long studentCountBefore = studentRepository.count();
+        String requestBody = """
+                {
+                  "firstName": "Magne",
+                  "lastName": "Candace",
+                  "university": "University of Douala"
+                 }
+        """;
+
+        mockMvc.perform(post("/students").contentType(MediaType.APPLICATION_JSON).content(requestBody))
+                .andExpect(status().isCreated());
+
+        assertThat(studentRepository.count()).isEqualTo(studentCountBefore +1);
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
