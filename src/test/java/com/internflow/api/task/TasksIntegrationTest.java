@@ -15,7 +15,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -160,6 +160,96 @@ public class TasksIntegrationTest {
         mockMvc.perform(patch("/tasks/" + created.id() + "/completed").contentType(MediaType.APPLICATION_JSON).content(updatedBody))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.completed").value(true));
+    }
+
+    @Test
+    void updateTaskCompletedShouldReturnBadRequestWhenCompletedIsMissing() throws Exception {
+        String requestBody = """
+                {
+                    "title": "Write tests",
+                    "description": "Test missing completed field"
+                }
+                """;
+
+        String responseBody = taskResponseBody(requestBody);
+        TaskResponse created = objectMapper.readValue(responseBody, TaskResponse.class);
+
+        String updatedBody = "{}";
+
+        mockMvc.perform(patch("/tasks/" + created.id() + "/completed")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(updatedBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.completed").value("Completed is required"));
+    }
+
+    @Test
+    void updateTaskCompletedShouldReturnBadRequestWhenCompletedIsNull() throws Exception {
+        String requestBody = """
+                    {
+                    "title": "Write tests",
+                    "description": "Test missing completed field"
+                    }
+                """;
+        String responseBody = taskResponseBody(requestBody);
+        TaskResponse created = objectMapper.readValue(responseBody, TaskResponse.class);
+        String validBody = """
+                   {
+                   "completed": true
+                   }
+                """;
+        mockMvc.perform(patch("/tasks/" + created.id() + "/completed")
+                        .contentType(MediaType.APPLICATION_JSON).content(validBody))
+                .andExpect(status().isOk());
+
+        String invalidBody = """
+                {
+                    "completed": null
+                }
+                """;
+        mockMvc.perform(patch("/tasks/" + created.id() + "/completed").contentType(MediaType.APPLICATION_JSON)
+                .content(invalidBody))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Validation failed"))
+                .andExpect(jsonPath("$.errors.completed").value("Completed is required"));
+
+        Task unchangedTask = taskRepository.findById(created.id()).orElseThrow();
+        assertTrue(unchangedTask.isCompleted());
+    }
+
+    @Test
+    void updateTaskCompletedShouldAcceptFalse() throws Exception {
+        String requestBody = """
+                    {
+                    "title": "Write tests",
+                    "description": "Test missing completed field"
+                    }
+                """;
+        String responseBody = taskResponseBody(requestBody);
+        TaskResponse created = objectMapper.readValue(responseBody, TaskResponse.class);
+        String validBodyWithTrue = """
+                   {
+                   "completed": true
+                   }
+                """;
+        mockMvc.perform(patch("/tasks/" + created.id() + "/completed")
+                        .contentType(MediaType.APPLICATION_JSON).content(validBodyWithTrue))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.completed").value(true));
+
+        String validBodyWithFalse = """
+                {
+                    "completed": false
+                }
+                """;
+        mockMvc.perform(patch("/tasks/" + created.id() + "/completed").contentType(MediaType.APPLICATION_JSON)
+                .content(validBodyWithFalse))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.completed").value(false));
+
+        Task updatedTask = taskRepository.findById(created.id()).orElseThrow();
+        assertFalse(updatedTask.isCompleted());
     }
 
     @Test
