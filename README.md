@@ -39,10 +39,11 @@ standards.
 <div align="center">
 
 ```
-                        ┌──────────┐       ┌──────────────┐       ┌──────────┐
-                        │  Student │ 1───* │  Internship  │ *───1 │  Mentor  │
-                        └──────────┘       └──────┬───────┘       └──────────┘
+                        ┌──────────┐            ┌──────────────┐            ┌──────────┐
+                        │  Student │ 0..1 ─── * │  Internship  │ * ─── 0..1 │  Mentor  │
+                        └──────────┘            └──────┬───────┘            └──────────┘
                          │ 1
+                       |
                        |
                         * 
                         ┌──────────┐
@@ -52,7 +53,8 @@ standards.
 ```
 
 </div>
-An internship can have one assigned student, one assigned mentor, and multiple tasks.
+An internship may have one assigned student, may have one assigned mentor, and can contain multiple tasks.
+Every task belongs to exactly one internship.
 
 ## Features
 
@@ -158,6 +160,6 @@ Tests run against an embedded H2 database — no external dependencies needed.
 
 ## Roadmap
 
+- [x] Stable paginated response DTO
 - [ ] Authentication & role-based access control
-- [ ] Stable paginated response DTO
 - [ ] API documentation (OpenAPI / Swagger)
