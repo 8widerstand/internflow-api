@@ -29,7 +29,7 @@ standards.
 - [Domain Model](#domain-model)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
-- [API Endpoints](#api-endpoints)
+- [API Documentation](#api-documentation)
 - [Getting Started](#getting-started)
 - [Running Tests](#running-tests)
 - [Roadmap](#roadmap)
@@ -83,8 +83,12 @@ Every task belongs to exactly one internship.
 - MockMvc for controller-level testing
 - JUnit 5 + Mockito
 
-## API Endpoints
+## API Documentation
 
+With the application running:
+
+- Swagger UI: http://localhost:8080/swagger-ui/index.html
+- OpenAPI JSON: http://localhost:8080/v3/api-docs
 ### Internships
 
 | Resource    | Method | Endpoint                                          | Description                    |
@@ -161,5 +165,5 @@ Tests run against an embedded H2 database — no external dependencies needed.
 ## Roadmap
 
 - [x] Stable paginated response DTO
+- [x] API documentation (OpenAPI / Swagger)
 - [ ] Authentication & role-based access control
-- [ ] API documentation (OpenAPI / Swagger)
