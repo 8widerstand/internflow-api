@@ -1,6 +1,12 @@
 package com.internflow.api.internship;
 
+import com.internflow.api.common.error.ApiErrorResponse;
 import com.internflow.api.common.pagination.PagedResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,6 +18,10 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@Tag(
+        name = "Internships",
+        description = "Manage internships and their student and mentor assignments"
+)
 @RestController
 public class InternshipController {
     private final InternshipService internshipService;
@@ -41,6 +51,10 @@ public class InternshipController {
         return internshipService.findInternshipById(id);
     }
 
+    @Operation(summary = "Create an internship")
+    @ApiResponse(responseCode = "201", description = "Internship created")
+    @ApiResponse(responseCode = "400", description = "Invalid internship data",
+            content = @Content(mediaType = "application/json", schema = @Schema(implementation = ApiErrorResponse.class)))
     @PostMapping("/internships")
     public ResponseEntity<InternshipResponse> createInternship(
             @Valid @RequestBody CreateInternshipRequest createInternshipRequest
