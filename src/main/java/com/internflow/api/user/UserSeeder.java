@@ -19,5 +19,9 @@ public class UserSeeder implements CommandLineRunner {
         if (userRepository.findByUsername("admin").isEmpty()){
             userRepository.save(new User("admin", passwordEncoder.encode("admin123"), "ADMIN"));
         }
+
+        if (userRepository.findByUsername("user").isEmpty()) {
+            userRepository.save(new User("user", passwordEncoder.encode("user123"), "USER"));
+        }
     }
 }
