@@ -6,8 +6,8 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class UserSeeder implements CommandLineRunner {
-    private UserRepository userRepository;
-    private PasswordEncoder passwordEncoder;
+    private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     public UserSeeder(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
