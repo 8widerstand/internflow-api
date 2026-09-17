@@ -20,7 +20,8 @@ public class SecurityConfig {
                 .httpBasic(Customizer.withDefaults())
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers(HttpMethod.GET, "/**").permitAll()
-                                .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
+                            .requestMatchers(HttpMethod.POST, "/register").permitAll()
+                            .requestMatchers(HttpMethod.DELETE, "/**").hasRole("ADMIN")
                             .anyRequest().authenticated());
         return http.build();
     }
