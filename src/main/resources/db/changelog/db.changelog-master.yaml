@@ -195,3 +195,33 @@ databaseChangeLog:
             referencedTableName: "mentors"
             referencedColumnNames: "id"
             constraintName: "fk_internships_mentor"
+  - changeSet:
+      id: "010-create-users"
+      author: "willy"
+      changes:
+        - createTable:
+            tableName: "users"
+            columns:
+              - column:
+                  name: "id"
+                  type: "BIGINT"
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: "username"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: "password"
+                  type: "VARCHAR(255)"
+                  constraints:
+                    nullable: false
+              - column:
+                  name: "role"
+                  type: "VARCHAR(50)"
+                  constraints:
+                    nullable: false
