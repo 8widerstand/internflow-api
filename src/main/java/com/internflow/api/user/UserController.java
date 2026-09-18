@@ -22,4 +22,9 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
+    @PostMapping("/login")
+    public LoginResponse login(@Valid @RequestBody LoginRequest loginRequest) {
+        String token = userService.login(loginRequest.username(), loginRequest.password());
+        return new LoginResponse(token);
+    }
 }
