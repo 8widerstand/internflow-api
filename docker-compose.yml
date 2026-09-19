@@ -10,6 +10,24 @@ services:
       - "5433:5432"
     volumes:
       - internflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U internflow_user -d internflow"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  app:
+    build: .
+    container_name: internflow-app
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/internflow
+      DB_USERNAME: internflow_user
+      DB_PASSWORD: internflow_password
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
   internflow_postgres_data:
