@@ -1,9 +1,11 @@
 package com.internflow.api.user;
 
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+@Profile("(local | test) & !prod")
 @Component
 public class UserSeeder implements CommandLineRunner {
     private final UserRepository userRepository;
