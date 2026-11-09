@@ -166,4 +166,4 @@ Tests run against an embedded H2 database — no external dependencies needed.
 
 - [x] Stable paginated response DTO
 - [x] API documentation (OpenAPI / Swagger)
-- [ ] Authentication & role-based access control
+- [x] Authentication & role-based access control
